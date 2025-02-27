@@ -1,0 +1,39 @@
+
+buildscript {
+    ext {
+        buildToolsVersion = "35.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 35
+        targetSdkVersion = 35
+        ndkVersion = "28.0.13004108"
+        kotlinVersion = "1.9.22"
+    }
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal() // ✅ Ensures Gradle finds required plugins
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.2.0") // ✅ Android Gradle Plugin
+        classpath("com.google.gms:google-services:4.3.10") // ✅ Google Services Plugin
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22") // ✅ Kotlin Plugin
+    }
+}
+plugins {
+    id("com.android.application")
+    id("com.facebook.react") apply false
+    id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.android")
+}
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// ✅ Apply plugins AFTER buildscript
+//apply plugin: "com.android.application"
+//apply plugin: "com.facebook.react"
+//apply plugin: "com.google.gms.google-services"
+//apply plugin: "kotlin-android" // ✅ Ensures Kotlin is correctly applied
