@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "32766606102",
+    "project_id": "ai-rapid-response",
+    "storage_bucket": "ai-rapid-response.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:32766606102:android:255de13ad03895c3b86e37",
+        "android_client_info": {
+          "package_name": "com.example.rapidresponse"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "32766606102-1ljnk07ctqvnletqi5qk9m1ljmmolv1o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANKXQg7ZvOVdgLJ0rd-r81LVFC4yjdEco"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "32766606102-1ljnk07ctqvnletqi5qk9m1ljmmolv1o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

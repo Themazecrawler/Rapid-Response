@@ -1,0 +1,30 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            // ✅ Ensure React Native plugin is correctly resolved
+            if (requested.id.id == "com.facebook.react") {
+                useModule("com.facebook.react:react-native-gradle-plugin:0.78.0")
+            }
+            if (requested.id.namespace == "org.jetbrains.kotlin") {
+                useVersion("1.9.22")
+            }
+        }
+    }
+    includeBuild("../node_modules/@react-native/gradle-plugin") // ✅ Ensures React Native Gradle Plugin is found
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "AIRapidResponse"
+include(":app")
