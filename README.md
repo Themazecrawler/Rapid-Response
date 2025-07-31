@@ -1,97 +1,200 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Rapid Response - Emergency Alert System
 
-# Getting Started
+A React Native mobile application with a Node.js/Express backend for emergency alert management in educational institutions.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 🚨 Features
 
-## Step 1: Start Metro
+- **Emergency Alert System**: Send emergency alerts with location data
+- **User Authentication**: Firebase-based authentication system
+- **Real-time Notifications**: Instant alert notifications
+- **Contact Management**: Emergency contact directory
+- **Location Services**: GPS-based location tracking
+- **Alert History**: Track and view past alerts
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## 📱 Tech Stack
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### Frontend (React Native)
+- React Native 0.78.0
+- TypeScript
+- React Navigation 7
+- Firebase Authentication
+- AsyncStorage for local data
+- Vector Icons
 
-```sh
-# Using npm
-npm start
+### Backend (Node.js/Express)
+- Express.js
+- TypeScript
+- PostgreSQL database
+- JWT authentication
+- Rate limiting
+- Helmet security
+- CORS support
 
-# OR using Yarn
-yarn start
+## 🛠️ Prerequisites
+
+- Node.js >= 18
+- React Native CLI
+- PostgreSQL database
+- Firebase project (for authentication)
+- Android Studio / Xcode (for mobile development)
+
+## 📦 Installation
+
+### 1. Clone the repository
+```bash
+git clone <repository-url>
+cd Rapid-Response
 ```
 
-## Step 2: Build and run your app
+### 2. Install frontend dependencies
+```bash
+npm install
+```
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### 3. Install backend dependencies
+```bash
+cd backend
+npm install
+cd ..
+```
 
-### Android
+### 4. Environment Setup
 
-```sh
-# Using npm
+#### Backend Environment
+Copy the example environment file and configure your database:
+```bash
+cd backend
+cp env.example .env
+```
+
+Edit `.env` with your database credentials:
+```env
+DB_USER=your_db_user
+DB_HOST=localhost
+DB_NAME=rapid_response_db
+DB_PASSWORD=your_db_password
+DB_PORT=5432
+JWT_SECRET=your-super-secret-jwt-key
+PORT=5000
+NODE_ENV=development
+```
+
+#### Frontend Firebase Setup
+1. Create a Firebase project
+2. Enable Authentication (Email/Password)
+3. Add your Firebase configuration to the app
+
+### 5. Database Setup
+
+Create the PostgreSQL database and run migrations:
+```sql
+CREATE DATABASE rapid_response_db;
+```
+
+The database schema is defined in the queries file. You may need to create the tables manually or use a migration tool.
+
+## 🚀 Running the Application
+
+### Start the Backend
+```bash
+# Development mode
+npm run backend:dev
+
+# Production mode
+npm run backend:start
+```
+
+### Start the Frontend
+```bash
+# Android
 npm run android
 
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
+# iOS
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+## 📁 Project Structure
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```
+Rapid-Response/
+├── src/                    # React Native source code
+│   ├── navigation/         # Navigation components
+│   ├── screens/           # Screen components
+│   └── services/          # API and Firebase services
+├── backend/               # Node.js backend
+│   ├── src/
+│   │   ├── routes/        # API routes
+│   │   ├── middleware/    # Express middleware
+│   │   ├── db/           # Database queries
+│   │   └── server.ts     # Main server file
+│   └── package.json
+├── android/               # Android-specific files
+├── ios/                   # iOS-specific files
+└── package.json           # Frontend dependencies
+```
 
-## Step 3: Modify your app
+## 🔧 API Endpoints
 
-Now that you have successfully run the app, let's make changes!
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+### Alerts
+- `POST /api/alerts` - Create new alert
+- `GET /api/alerts/recent` - Get recent alerts
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+### Contacts
+- `GET /api/contacts` - Get available contacts
+- `POST /api/contacts` - Create new contact
+- `PATCH /api/contacts/:id/availability` - Update contact availability
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+### Users
+- `GET /api/users/profile` - Get user profile
+- `PUT /api/users/profile` - Update user profile
+- `GET /api/users/alerts` - Get user's alert history
 
-## Congratulations! :tada:
+## 🛡️ Security Features
 
-You've successfully run and modified your React Native App. :partying_face:
+- JWT-based authentication
+- Password hashing with bcrypt
+- Rate limiting
+- Helmet security headers
+- CORS configuration
+- Input validation
 
-### Now what?
+## 🧪 Testing
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+```bash
+# Frontend tests
+npm test
 
-# Troubleshooting
+# Backend tests (from backend directory)
+cd backend
+npm test
+```
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## 📝 Contributing
 
-# Learn More
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-To learn more about React Native, take a look at the following resources:
+## 📄 License
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support, please contact the development team or create an issue in the repository.
+
+## 🔄 Recent Fixes
+
+- Fixed duplicate App component in App.tsx
+- Created missing backend dependencies and middleware
+- Added proper TypeScript configurations
+- Created missing React Native screens and services
+- Fixed navigation structure
+- Added comprehensive error handling
+- Created environment configuration templates
