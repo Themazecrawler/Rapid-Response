@@ -7,10 +7,9 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "test": "jest",
-    "start": "ts-node src/server.ts",
-    "dev": "nodemon src/server.ts",
-    "build": "tsc",
-    "migrate": "node-pg-migrate"
+    "backend:start": "cd backend && npm start",
+    "backend:dev": "cd backend && npm run dev",
+    "backend:build": "cd backend && npm run build"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.24.0",
