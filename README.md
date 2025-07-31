@@ -2,7 +2,7 @@
 
 A React Native mobile application with a Node.js/Express backend for emergency alert management in educational institutions.
 
-## 🚨 Features
+## Features
 
 - **Emergency Alert System**: Send emergency alerts with location data
 - **User Authentication**: Firebase-based authentication system
@@ -11,7 +11,7 @@ A React Native mobile application with a Node.js/Express backend for emergency a
 - **Location Services**: GPS-based location tracking
 - **Alert History**: Track and view past alerts
 
-## 📱 Tech Stack
+## Tech Stack
 
 ### Frontend (React Native)
 - React Native 0.78.0
@@ -30,7 +30,7 @@ A React Native mobile application with a Node.js/Express backend for emergency a
 - Helmet security
 - CORS support
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 - Node.js >= 18
 - React Native CLI
@@ -38,7 +38,7 @@ A React Native mobile application with a Node.js/Express backend for emergency a
 - Firebase project (for authentication)
 - Android Studio / Xcode (for mobile development)
 
-## 📦 Installation
+## Installation
 
 ### 1. Clone the repository
 ```bash
@@ -93,7 +93,7 @@ CREATE DATABASE rapid_response_db;
 
 The database schema is defined in the queries file. You may need to create the tables manually or use a migration tool.
 
-## 🚀 Running the Application
+## Running the Application
 
 ### Start the Backend
 ```bash
@@ -113,7 +113,7 @@ npm run android
 npm run ios
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Rapid-Response/
@@ -153,7 +153,7 @@ Rapid-Response/
 - `PUT /api/users/profile` - Update user profile
 - `GET /api/users/alerts` - Get user's alert history
 
-## 🛡️ Security Features
+## Security Features
 
 - JWT-based authentication
 - Password hashing with bcrypt
@@ -162,7 +162,7 @@ Rapid-Response/
 - CORS configuration
 - Input validation
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Frontend tests
@@ -173,7 +173,7 @@ cd backend
 npm test
 ```
 
-## 📝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -181,15 +181,15 @@ npm test
 4. Add tests if applicable
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
-## 🆘 Support
+## Support
 
 For support, please contact the development team or create an issue in the repository.
 
-## 🔄 Recent Fixes
+## Recent Fixes
 
 - Fixed duplicate App component in App.tsx
 - Created missing backend dependencies and middleware
