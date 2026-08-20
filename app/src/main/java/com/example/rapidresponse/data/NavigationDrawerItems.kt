@@ -1,6 +1,7 @@
 package com.example.rapidresponse.data
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocationOn
@@ -18,5 +19,6 @@ val navigationDrawerItems = listOf(
     NavigationDrawerItem("Emergency Alert", Icons.Filled.Warning, Screen.AlertScreen.route),
     NavigationDrawerItem("Emergency Contacts", Icons.Filled.ContactPhone, Screen.ContactsScreen.route),
     NavigationDrawerItem("My Location", Icons.Filled.LocationOn, Screen.LocationScreen.route),
-    NavigationDrawerItem("Alert History", Icons.Filled.History, Screen.HistoryScreen.route)
+    NavigationDrawerItem("Alert History", Icons.Filled.History, Screen.HistoryScreen.route),
+    NavigationDrawerItem("Alert Statistics", Icons.Filled.BarChart, Screen.StatisticsScreen.route)
 )

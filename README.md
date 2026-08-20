@@ -13,8 +13,13 @@ not deleted).
   priority, submitted straight to the backend and visible to security staff.
 - **Firebase Authentication**: Email/password sign-in and registration.
 - **Emergency Contacts**: Campus security contact directory with one-tap calling.
-- **My Location**: Live GPS position on a Google Map, with one-tap sharing.
+- **My Location**: Live GPS position on a Google Map, with one-tap sharing and a list of
+  nearby police stations (Google Places) with distance and directions.
 - **Alert History**: Past alerts you've submitted, with status.
+- **Alert Statistics**: Campus-wide charts — alerts by type, priority, and day of week.
+- **SMS Confirmation**: If you leave a phone number on an alert, the backend sends a Twilio
+  SMS confirming it was received. Twilio credentials live server-side only and are never
+  shipped inside the APK.
 
 ## Tech Stack
 
@@ -23,13 +28,15 @@ not deleted).
 - Hilt for dependency injection
 - Retrofit/OkHttp for the backend API, with a Firebase ID token attached to every request
 - Firebase Authentication (email/password)
-- Google Maps Compose + Fused Location for the location screen
+- Google Maps Compose + Fused Location + Places SDK for the location screen
 - Navigation Compose
+- Vico (`compose-m3`) for the statistics charts
 
 ### Backend (`backend/`)
 - Express.js + TypeScript
 - PostgreSQL (via `pg`)
 - Firebase Admin SDK verifies the ID token the app sends (no separate password/JWT system)
+- Twilio for SMS confirmations (optional — no-ops if unconfigured)
 - Helmet, CORS, rate limiting
 
 ## Setup
@@ -47,18 +54,20 @@ The backend needs a Firebase service account (Firebase Console → Project Setti
 Accounts → Generate new private key) so it can verify ID tokens from the app. See
 `backend/env.example` for the exact fields.
 
-Create the database and run the migration:
+Create the database and run the migrations, in order:
 ```sql
 CREATE DATABASE rapid_response_db;
 ```
 ```bash
 psql -d rapid_response_db -f backend/migrations/001_initial_schema.sql
+psql -d rapid_response_db -f backend/migrations/002_add_reporter_phone.sql
 ```
 
 ### 2. Android app
 
 1. Copy `local.properties.example` to `local.properties` and fill in:
-   - `MAPS_API_KEY` — a Google Maps SDK key (Google Cloud Console)
+   - `MAPS_API_KEY` — a Google Maps key with both the **Maps SDK for Android** and
+     **Places API** enabled (Google Cloud Console) — the Location screen uses both
    - `API_BASE_URL` — where your backend is reachable from the device/emulator
      (`http://10.0.2.2:5000/` reaches your host machine's localhost from the emulator)
 2. `app/google-services.json` is already wired to the `ai-rapid-response` Firebase project.
@@ -82,12 +91,14 @@ Rapid-Response/
 │       ├── navigation/        # NavHost + screen routes
 │       ├── network/           # Retrofit service + Firebase-token interceptor
 │       ├── repository/        # Backend API repository
-│       └── screens/           # auth, home, alert, contacts, location, history
+│       └── screens/           # auth, home, alert, contacts, location, history, statistics
 ├── backend/                   # Node.js/Express API
 │   └── src/
-│       ├── config/firebaseAdmin.ts
+│       ├── config/            # firebaseAdmin.ts, twilio.ts
 │       ├── middleware/         # Firebase token verification + user resolution
 │       ├── routes/             # auth (sync), alerts, contacts, users
+│       ├── services/sms.ts     # Twilio SMS confirmation
+│       ├── utils/serializers.ts # snake_case DB rows -> camelCase API responses
 │       └── db/
 └── legacy-react-native/        # Previous React Native implementation (kept for reference)
 ```
@@ -99,8 +110,10 @@ Rapid-Response/
   Firebase user (called once after register/login)
 
 ### Alerts
-- `POST /api/alerts` — create new alert
+- `POST /api/alerts` — create new alert. If `reporterPhone` is included, a Twilio SMS
+  confirmation is sent (fire-and-forget; failures don't fail the request)
 - `GET /api/alerts/recent` — recent alerts (24h)
+- `GET /api/alerts/stats` — aggregate counts by type/priority/status/day-of-week, for the Statistics screen
 
 ### Contacts
 - `GET /api/contacts` — available emergency contacts
@@ -116,8 +129,11 @@ first) and a `Authorization: Bearer <Firebase ID token>` header.
 
 ## Known gaps
 
-Crime/alert statistics & charts, prevention tips, SMS confirmation on submission, and PDF
-export of reports aren't built here yet — planned as follow-up work.
+Prevention tips and admin PDF export of reports aren't built yet.
+"AI/ML crime prediction" was considered but deliberately deferred — see discussion in the
+project history; a simple statistical/clustering view of real alert data (already covered by
+the Statistics screen) gets most of the value without the data-volume and bias problems a real
+predictive model would have this early on.
 
 ## Testing
 

@@ -18,9 +18,9 @@ export const queries = {
   createAlert: `
     INSERT INTO emergency_alerts (
       user_id, type, description, latitude, longitude,
-      building, floor, status, priority
+      building, floor, status, priority, reporter_phone
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     RETURNING *
   `,
 
@@ -30,6 +30,33 @@ export const queries = {
     JOIN users u ON ea.user_id = u.id
     WHERE ea.created_at >= NOW() - INTERVAL '24 HOURS'
     ORDER BY ea.created_at DESC
+  `,
+
+  statsByType: `
+    SELECT type, COUNT(*)::int as count
+    FROM emergency_alerts
+    GROUP BY type
+    ORDER BY count DESC
+  `,
+
+  statsByPriority: `
+    SELECT priority, COUNT(*)::int as count
+    FROM emergency_alerts
+    GROUP BY priority
+  `,
+
+  statsByStatus: `
+    SELECT status, COUNT(*)::int as count
+    FROM emergency_alerts
+    GROUP BY status
+  `,
+
+  // Postgres DOW: 0 = Sunday .. 6 = Saturday
+  statsByDayOfWeek: `
+    SELECT EXTRACT(DOW FROM created_at)::int as dow, COUNT(*)::int as count
+    FROM emergency_alerts
+    GROUP BY dow
+    ORDER BY dow
   `,
 
   // Contact queries

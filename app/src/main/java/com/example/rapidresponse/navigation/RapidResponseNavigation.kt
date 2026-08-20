@@ -15,6 +15,7 @@ import com.example.rapidresponse.screens.contacts.ContactsScreen
 import com.example.rapidresponse.screens.history.HistoryScreen
 import com.example.rapidresponse.screens.home.HomeScreen
 import com.example.rapidresponse.screens.location.LocationScreen
+import com.example.rapidresponse.screens.statistics.StatisticsScreen
 
 @Composable
 fun RapidResponseNavigation() {
@@ -32,5 +33,6 @@ fun RapidResponseNavigation() {
         composable(Screen.ContactsScreen.route) { ContactsScreen(navController) }
         composable(Screen.LocationScreen.route) { LocationScreen(navController) }
         composable(Screen.HistoryScreen.route) { HistoryScreen(navController) }
+        composable(Screen.StatisticsScreen.route) { StatisticsScreen(navController) }
     }
 }

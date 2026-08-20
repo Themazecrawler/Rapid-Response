@@ -1,5 +1,6 @@
 package com.example.rapidresponse.network
 
+import com.example.rapidresponse.model.AlertStats
 import com.example.rapidresponse.model.ApiEnvelope
 import com.example.rapidresponse.model.EmergencyAlert
 import com.example.rapidresponse.model.EmergencyContact
@@ -34,4 +35,7 @@ interface ApiService {
 
     @GET("api/contacts")
     suspend fun getContacts(): Response<ApiEnvelope<List<EmergencyContact>>>
+
+    @GET("api/alerts/stats")
+    suspend fun getAlertStats(): Response<ApiEnvelope<AlertStats>>
 }
