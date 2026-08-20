@@ -1,9 +1,10 @@
 import express from 'express';
 import { pool } from '../db';
 import { queries } from '../db/queries';
-import { authenticateToken, resolveUser } from '../middleware/auth';
+import { authenticateToken, requireRole, resolveUser } from '../middleware/auth';
 import { mapAlertRow } from '../utils/serializers';
 import { sendAlertConfirmationSms } from '../services/sms';
+import { notifyStaffOfNewAlert } from '../services/push';
 
 const router = express.Router();
 
@@ -54,11 +55,16 @@ router.post('/', authenticateToken, resolveUser, async (req, res, next) => {
       alert = existing.rows[0];
     }
 
-    if (isNewAlert && reporterPhone) {
-      // Fire-and-forget, and only on the first successful insert - a retried duplicate
-      // request must not re-send the confirmation SMS.
-      sendAlertConfirmationSms(reporterPhone, type).catch((error) => {
-        console.error('Failed to send alert confirmation SMS:', error);
+    if (isNewAlert) {
+      // Both fire-and-forget, and both only on the first successful insert - a retried
+      // duplicate request must not re-send the SMS or re-notify staff.
+      if (reporterPhone) {
+        sendAlertConfirmationSms(reporterPhone, type).catch((error) => {
+          console.error('Failed to send alert confirmation SMS:', error);
+        });
+      }
+      notifyStaffOfNewAlert(mapAlertRow(alert), req.user!.id!).catch((error) => {
+        console.error('Failed to push-notify staff of new alert:', error);
       });
     }
 
@@ -68,8 +74,9 @@ router.post('/', authenticateToken, resolveUser, async (req, res, next) => {
   }
 });
 
-// Get recent alerts
-router.get('/recent', authenticateToken, resolveUser, async (req, res, next) => {
+// Campus-wide recent alerts (not scoped to the caller) - restricted to security/admin, the
+// same audience push notifications go to, since this exposes every reported alert.
+router.get('/recent', authenticateToken, resolveUser, requireRole('security', 'admin'), async (req, res, next) => {
   try {
     const result = await pool.query(queries.getRecentAlerts);
     res.json({ success: true, data: result.rows.map(mapAlertRow) });

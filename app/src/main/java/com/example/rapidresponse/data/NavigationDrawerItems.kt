@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.rapidresponse.navigation.Screen
@@ -21,4 +22,10 @@ val navigationDrawerItems = listOf(
     NavigationDrawerItem("My Location", Icons.Filled.LocationOn, Screen.LocationScreen.route),
     NavigationDrawerItem("Alert History", Icons.Filled.History, Screen.HistoryScreen.route),
     NavigationDrawerItem("Alert Statistics", Icons.Filled.BarChart, Screen.StatisticsScreen.route)
+)
+
+// Only security/admin get push notifications about new alerts, so this is the only item
+// gated by role - everything else in navigationDrawerItems is available to any signed-in user.
+val staffNavigationDrawerItems = listOf(
+    NavigationDrawerItem("Incoming Alerts", Icons.Filled.NotificationsActive, Screen.IncomingAlertsScreen.route)
 )

@@ -86,4 +86,26 @@ router.get('/alerts', authenticateToken, resolveUser, async (req, res, next) => 
   }
 });
 
+// Register (or reassign, if it moved to a different account on the same device) an FCM
+// token for push notifications. Called on every sign-in and whenever the token rotates -
+// every authenticated user registers a token, but only security/admin ever get pushed to
+// (see services/push.ts), so nothing extra happens for students registering theirs.
+router.post('/device-token', authenticateToken, resolveUser, async (req, res, next) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'token is required' }
+      });
+    }
+
+    await pool.query(queries.upsertDeviceToken, [req.user!.id, token]);
+    return res.status(204).send();
+  } catch (error) {
+    return next(error);
+  }
+});
+
 export default router;

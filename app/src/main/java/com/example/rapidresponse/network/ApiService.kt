@@ -2,6 +2,7 @@ package com.example.rapidresponse.network
 
 import com.example.rapidresponse.model.AlertStats
 import com.example.rapidresponse.model.ApiEnvelope
+import com.example.rapidresponse.model.DeviceTokenRequest
 import com.example.rapidresponse.model.EmergencyAlert
 import com.example.rapidresponse.model.EmergencyContact
 import com.example.rapidresponse.model.SyncUserRequest
@@ -38,4 +39,7 @@ interface ApiService {
 
     @GET("api/alerts/stats")
     suspend fun getAlertStats(): Response<ApiEnvelope<AlertStats>>
+
+    @POST("api/users/device-token")
+    suspend fun registerDeviceToken(@Body request: DeviceTokenRequest): Response<Unit>
 }

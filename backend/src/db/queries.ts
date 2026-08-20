@@ -14,6 +14,28 @@ export const queries = {
     SELECT * FROM users WHERE id = $1
   `,
 
+  // Device token queries (push notifications)
+  upsertDeviceToken: `
+    INSERT INTO device_tokens (user_id, fcm_token)
+    VALUES ($1, $2)
+    ON CONFLICT (fcm_token) DO UPDATE
+      SET user_id = EXCLUDED.user_id,
+          updated_at = CURRENT_TIMESTAMP
+  `,
+
+  deleteDeviceToken: `
+    DELETE FROM device_tokens WHERE fcm_token = $1
+  `,
+
+  // Tokens for staff who should be notified about a new alert, excluding the reporter's own
+  // devices (they already know they just reported it).
+  getStaffDeviceTokens: `
+    SELECT dt.fcm_token
+    FROM device_tokens dt
+    JOIN users u ON u.id = dt.user_id
+    WHERE u.role IN ('security', 'admin') AND u.id != $1
+  `,
+
   // Alert queries
 
   // ON CONFLICT DO NOTHING makes retried submissions (same client_alert_id) safe: a retry

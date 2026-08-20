@@ -3,6 +3,7 @@ package com.example.rapidresponse
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.example.rapidresponse.notifications.NotificationChannels
 import com.example.rapidresponse.queue.AlertQueueManager
 import com.google.android.libraries.places.api.Places
 import dagger.hilt.android.HiltAndroidApp
@@ -25,6 +26,8 @@ class RapidResponseApplication : Application(), Configuration.Provider {
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY)
         }
+
+        NotificationChannels.createAll(this)
 
         // Re-arm delivery for any alert still marked "pending" whose WorkManager job may not
         // have survived (force-stop, work DB cleared) - a cold-start safety net on top of

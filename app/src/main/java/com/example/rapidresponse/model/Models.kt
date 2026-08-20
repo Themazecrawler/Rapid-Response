@@ -14,6 +14,10 @@ data class SyncUserRequest(
     val campus: String
 )
 
+data class DeviceTokenRequest(
+    val token: String
+)
+
 data class EmergencyAlert(
     val id: Int? = null,
     val type: String,
