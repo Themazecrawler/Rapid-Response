@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,8 +31,14 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, authViewModel: AuthViewModel = hiltViewModel()) {
+fun HomeScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel()
+) {
     val user by authViewModel.user.collectAsState()
+    val pendingCount by homeViewModel.pendingCount.collectAsState()
+    val hasFailed by homeViewModel.hasFailed.collectAsState()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -147,6 +155,37 @@ fun HomeScreen(navController: NavController, authViewModel: AuthViewModel = hilt
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
+                }
+
+                if (pendingCount > 0) {
+                    Spacer(Modifier.height(12.dp))
+                    val bannerColor = if (hasFailed) MaterialTheme.colorScheme.error else Color(0xFFF9A825)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(bannerColor.copy(alpha = 0.1f))
+                            .clickable { navController.navigate(Screen.HistoryScreen.route) }
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            if (hasFailed) Icons.Filled.ErrorOutline else Icons.Filled.Schedule,
+                            contentDescription = null,
+                            tint = bannerColor
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            if (hasFailed) {
+                                "$pendingCount alert${if (pendingCount > 1) "s" else ""} not yet delivered - tap to view"
+                            } else {
+                                "$pendingCount alert${if (pendingCount > 1) "s" else ""} delivering in the background"
+                            },
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = bannerColor
+                        )
+                    }
                 }
 
                 Spacer(Modifier.height(30.dp))

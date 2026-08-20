@@ -2,6 +2,7 @@ package com.example.rapidresponse.screens.alert
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -78,6 +79,11 @@ fun AlertScreen(navController: NavController, viewModel: AlertViewModel = hiltVi
 
     LaunchedEffect(submitState) {
         if (submitState is SubmitState.Success) {
+            Toast.makeText(
+                context,
+                "Alert saved - delivering to campus security now.",
+                Toast.LENGTH_LONG
+            ).show()
             navController.popBackStack()
         }
     }
@@ -95,7 +101,8 @@ fun AlertScreen(navController: NavController, viewModel: AlertViewModel = hiltVi
             Text("Emergency Alert", fontSize = 22.sp, fontWeight = FontWeight.Bold)
         }
         Text(
-            "Fill in the details below. Your alert is sent immediately to campus security.",
+            "Fill in the details below. Your alert is saved instantly and delivered to campus " +
+                "security automatically, even on a weak or dropped connection.",
             fontSize = 13.sp,
             modifier = Modifier.padding(bottom = 20.dp)
         )
@@ -213,7 +220,7 @@ fun AlertScreen(navController: NavController, viewModel: AlertViewModel = hiltVi
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
         ) {
-            Text(if (submitState is SubmitState.Submitting) "Sending..." else "Send Alert")
+            Text(if (submitState is SubmitState.Submitting) "Saving..." else "Send Alert")
         }
     }
 }
