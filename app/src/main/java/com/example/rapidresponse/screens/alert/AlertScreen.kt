@@ -8,11 +8,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -28,6 +26,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.example.rapidresponse.model.EmergencyAlert
+import com.example.rapidresponse.ui.components.ScreenHeader
 import com.example.rapidresponse.ui.theme.Red
 
 private val alertTypes = listOf("Medical", "Fire", "Security Threat", "Crime in Progress", "Other")
@@ -94,12 +93,7 @@ fun AlertScreen(navController: NavController, viewModel: AlertViewModel = hiltVi
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 10.dp)) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-            }
-            Text("Emergency Alert", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        }
+        ScreenHeader(title = "Emergency Alert", onBack = { navController.popBackStack() })
         Text(
             "Fill in the details below. Your alert is saved instantly and delivered to campus " +
                 "security automatically, even on a weak or dropped connection.",

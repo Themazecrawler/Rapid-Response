@@ -9,7 +9,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.LocalPolice
 import androidx.compose.material.icons.filled.Share
@@ -26,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.rapidresponse.model.NearbyStation
+import com.example.rapidresponse.ui.components.ScreenHeader
 import com.example.rapidresponse.ui.theme.Red
 import com.example.rapidresponse.utils.findNearbyPoliceStations
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -75,12 +75,7 @@ fun LocationScreen(navController: NavController) {
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 10.dp)) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-            }
-            Text("My Location", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        }
+        ScreenHeader(title = "My Location", onBack = { navController.popBackStack() })
 
         when {
             !permissionState.status.isGranted -> Text(

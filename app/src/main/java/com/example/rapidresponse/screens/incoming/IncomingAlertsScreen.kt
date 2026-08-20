@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rapidresponse.model.EmergencyAlert
+import com.example.rapidresponse.ui.components.ScreenHeader
 import com.example.rapidresponse.ui.theme.Red
 
 // Campus-wide feed of everything reported in the last 24h - what security/admin land on when
@@ -31,12 +30,7 @@ fun IncomingAlertsScreen(navController: NavController, viewModel: IncomingAlerts
     val error by viewModel.error.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 10.dp)) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-            }
-            Text("Incoming Alerts", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        }
+        ScreenHeader(title = "Incoming Alerts", onBack = { navController.popBackStack() })
         Text(
             "Everything reported campus-wide in the last 24 hours.",
             fontSize = 13.sp,
