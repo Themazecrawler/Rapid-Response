@@ -48,6 +48,7 @@ fun AlertScreen(navController: NavController, viewModel: AlertViewModel = hiltVi
     var latitude by remember { mutableStateOf<Double?>(null) }
     var longitude by remember { mutableStateOf<Double?>(null) }
     var capturingLocation by remember { mutableStateOf(false) }
+    var phone by remember { mutableStateOf("") }
 
     fun captureLocation() {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -156,6 +157,15 @@ fun AlertScreen(navController: NavController, viewModel: AlertViewModel = hiltVi
             )
         }
 
+        OutlinedTextField(
+            value = phone,
+            onValueChange = { phone = it },
+            label = { Text("Your phone (optional)") },
+            placeholder = { Text("For an SMS confirmation, e.g. +1555...") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+        )
+
         Spacer(Modifier.height(12.dp))
 
         OutlinedButton(
@@ -193,7 +203,8 @@ fun AlertScreen(navController: NavController, viewModel: AlertViewModel = hiltVi
                         longitude = longitude,
                         building = building.ifBlank { null },
                         floor = floor.ifBlank { null },
-                        priority = priority
+                        priority = priority,
+                        reporterPhone = phone.ifBlank { null }
                     )
                 )
             },

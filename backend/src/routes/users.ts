@@ -2,6 +2,7 @@ import express from 'express';
 import { pool } from '../db';
 import { queries } from '../db/queries';
 import { authenticateToken, resolveUser } from '../middleware/auth';
+import { mapAlertRow } from '../utils/serializers';
 
 const router = express.Router();
 
@@ -78,7 +79,7 @@ router.get('/alerts', authenticateToken, resolveUser, async (req, res, next) => 
 
     res.json({
       success: true,
-      data: result.rows
+      data: result.rows.map(mapAlertRow)
     });
   } catch (error) {
     next(error);

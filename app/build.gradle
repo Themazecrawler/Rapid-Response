@@ -89,6 +89,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-location:21.0.1'
     implementation "com.google.accompanist:accompanist-permissions:0.28.0"
 
+    // Places SDK, for finding nearby police/security stations from the Location screen
+    implementation 'com.google.android.libraries.places:places:3.0.0'
+
     // Dagger - Hilt
     implementation 'com.google.dagger:hilt-android:2.44.2'
     kapt 'com.google.dagger:hilt-compiler:2.44.2'
@@ -105,6 +108,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.android.gms:play-services-auth:20.4.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4'
+
+    // Charts (Statistics screen)
+    implementation "com.patrykandpatrick.vico:compose-m3:1.6.4"
 }
 
 kapt {

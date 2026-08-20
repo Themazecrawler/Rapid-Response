@@ -1,5 +1,6 @@
 package com.example.rapidresponse.repository
 
+import com.example.rapidresponse.model.AlertStats
 import com.example.rapidresponse.model.DataOrException
 import com.example.rapidresponse.model.EmergencyAlert
 import com.example.rapidresponse.model.EmergencyContact
@@ -66,6 +67,22 @@ class RapidResponseRepository @Inject constructor(private val api: ApiService) {
                 result.data = response.body()?.data ?: emptyList()
             } else {
                 result.e = Exception(response.errorBody()?.string() ?: "Failed to load contacts")
+            }
+        } catch (e: Exception) {
+            result.e = e
+        }
+        result.loading = false
+        return result
+    }
+
+    suspend fun getAlertStats(): DataOrException<AlertStats, Exception> {
+        val result = DataOrException<AlertStats, Exception>(loading = true)
+        try {
+            val response = api.getAlertStats()
+            if (response.isSuccessful) {
+                result.data = response.body()?.data
+            } else {
+                result.e = Exception(response.errorBody()?.string() ?: "Failed to load statistics")
             }
         } catch (e: Exception) {
             result.e = e

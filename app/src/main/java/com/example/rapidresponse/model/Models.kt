@@ -25,7 +25,8 @@ data class EmergencyAlert(
     val priority: String,
     val status: String? = null,
     val createdAt: String? = null,
-    val reporterName: String? = null
+    val reporterName: String? = null,
+    val reporterPhone: String? = null
 )
 
 data class EmergencyContact(
@@ -41,4 +42,21 @@ data class EmergencyContact(
 data class ApiEnvelope<T>(
     val success: Boolean,
     val data: T? = null
+)
+
+data class CountEntry(
+    val label: String,
+    val count: Int
+)
+
+data class AlertStats(
+    val totalAlerts: Int,
+    val activeAlerts: Int,
+    val investigatingAlerts: Int,
+    val resolvedAlerts: Int,
+    val byType: List<CountEntry>,
+    val byPriority: List<CountEntry>,
+    val byDayOfWeek: List<CountEntry>,
+    val mostCommonType: String?,
+    val busiestDay: String?
 )
