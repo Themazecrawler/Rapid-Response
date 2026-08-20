@@ -1,0 +1,76 @@
+package com.example.rapidresponse.repository
+
+import com.example.rapidresponse.model.DataOrException
+import com.example.rapidresponse.model.EmergencyAlert
+import com.example.rapidresponse.model.EmergencyContact
+import com.example.rapidresponse.model.SyncUserRequest
+import com.example.rapidresponse.model.UserProfile
+import com.example.rapidresponse.network.ApiService
+import javax.inject.Inject
+
+class RapidResponseRepository @Inject constructor(private val api: ApiService) {
+
+    suspend fun syncProfile(displayName: String, campus: String): DataOrException<UserProfile, Exception> {
+        val result = DataOrException<UserProfile, Exception>(loading = true)
+        try {
+            val response = api.syncProfile(SyncUserRequest(displayName, campus))
+            if (response.isSuccessful) {
+                result.data = response.body()?.data
+            } else {
+                result.e = Exception(response.errorBody()?.string() ?: "Failed to sync profile")
+            }
+        } catch (e: Exception) {
+            result.e = e
+        }
+        result.loading = false
+        return result
+    }
+
+    suspend fun submitAlert(alert: EmergencyAlert): DataOrException<EmergencyAlert, Exception> {
+        val result = DataOrException<EmergencyAlert, Exception>(loading = true)
+        try {
+            val response = api.createAlert(alert)
+            if (response.isSuccessful) {
+                result.data = response.body()?.data
+            } else {
+                result.e = Exception(response.errorBody()?.string() ?: "Failed to submit alert")
+            }
+        } catch (e: Exception) {
+            result.e = e
+        }
+        result.loading = false
+        return result
+    }
+
+    suspend fun getMyAlerts(): DataOrException<List<EmergencyAlert>, Exception> {
+        val result = DataOrException<List<EmergencyAlert>, Exception>(loading = true)
+        try {
+            val response = api.getMyAlerts()
+            if (response.isSuccessful) {
+                result.data = response.body()?.data ?: emptyList()
+            } else {
+                result.e = Exception(response.errorBody()?.string() ?: "Failed to load alert history")
+            }
+        } catch (e: Exception) {
+            result.e = e
+        }
+        result.loading = false
+        return result
+    }
+
+    suspend fun getContacts(): DataOrException<List<EmergencyContact>, Exception> {
+        val result = DataOrException<List<EmergencyContact>, Exception>(loading = true)
+        try {
+            val response = api.getContacts()
+            if (response.isSuccessful) {
+                result.data = response.body()?.data ?: emptyList()
+            } else {
+                result.e = Exception(response.errorBody()?.string() ?: "Failed to load contacts")
+            }
+        } catch (e: Exception) {
+            result.e = e
+        }
+        result.loading = false
+        return result
+    }
+}

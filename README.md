@@ -1,196 +1,131 @@
 # Rapid Response - Emergency Alert System
 
-A React Native mobile application with a Node.js/Express backend for emergency alert management in educational institutions.
+A native Android app (Kotlin + Jetpack Compose) for campus emergency alerting, backed by a
+Node.js/Express + PostgreSQL API. Firebase owns identity, the app talks to its backend/Maps/etc.
+directly over Retrofit, and everything is built with Compose + Hilt.
+
+Previous React Native version has been moved to `legacy-react-native/` (kept for reference,
+not deleted).
 
 ## Features
 
-- **Emergency Alert System**: Send emergency alerts with location data
-- **User Authentication**: Firebase-based authentication system
-- **Real-time Notifications**: Instant alert notifications
-- **Contact Management**: Emergency contact directory
-- **Location Services**: GPS-based location tracking
-- **Alert History**: Track and view past alerts
+- **Emergency Alert System**: Real-time alerts with GPS location, building/floor, type and
+  priority, submitted straight to the backend and visible to security staff.
+- **Firebase Authentication**: Email/password sign-in and registration.
+- **Emergency Contacts**: Campus security contact directory with one-tap calling.
+- **My Location**: Live GPS position on a Google Map, with one-tap sharing.
+- **Alert History**: Past alerts you've submitted, with status.
 
 ## Tech Stack
 
-### Frontend (React Native)
-- React Native 0.78.0
-- TypeScript
-- React Navigation 7
-- Firebase Authentication
-- AsyncStorage for local data
-- Vector Icons
+### App (`app/`)
+- Kotlin + Jetpack Compose (Material3)
+- Hilt for dependency injection
+- Retrofit/OkHttp for the backend API, with a Firebase ID token attached to every request
+- Firebase Authentication (email/password)
+- Google Maps Compose + Fused Location for the location screen
+- Navigation Compose
 
-### Backend (Node.js/Express)
-- Express.js
-- TypeScript
-- PostgreSQL database
-- JWT authentication
-- Rate limiting
-- Helmet security
-- CORS support
+### Backend (`backend/`)
+- Express.js + TypeScript
+- PostgreSQL (via `pg`)
+- Firebase Admin SDK verifies the ID token the app sends (no separate password/JWT system)
+- Helmet, CORS, rate limiting
 
-## Prerequisites
+## Setup
 
-- Node.js >= 18
-- React Native CLI
-- PostgreSQL database
-- Firebase project (for authentication)
-- Android Studio / Xcode (for mobile development)
+### 1. Backend
 
-## Installation
-
-### 1. Clone the repository
-```bash
-git clone <repository-url>
-cd Rapid-Response
-```
-
-### 2. Install frontend dependencies
-```bash
-npm install
-```
-
-### 3. Install backend dependencies
 ```bash
 cd backend
 npm install
-cd ..
+cp env.example .env   # fill in DB credentials + Firebase service account
+npm run dev
 ```
 
-### 4. Environment Setup
+The backend needs a Firebase service account (Firebase Console → Project Settings → Service
+Accounts → Generate new private key) so it can verify ID tokens from the app. See
+`backend/env.example` for the exact fields.
 
-#### Backend Environment
-Copy the example environment file and configure your database:
-```bash
-cd backend
-cp env.example .env
-```
-
-Edit `.env` with your database credentials:
-```env
-DB_USER=your_db_user
-DB_HOST=localhost
-DB_NAME=rapid_response_db
-DB_PASSWORD=your_db_password
-DB_PORT=5432
-JWT_SECRET=your-super-secret-jwt-key
-PORT=5000
-NODE_ENV=development
-```
-
-#### Frontend Firebase Setup
-1. Create a Firebase project
-2. Enable Authentication (Email/Password)
-3. Add your Firebase configuration to the app
-
-### 5. Database Setup
-
-Create the PostgreSQL database and run migrations:
+Create the database and run the migration:
 ```sql
 CREATE DATABASE rapid_response_db;
 ```
-
-The database schema is defined in the queries file. You may need to create the tables manually or use a migration tool.
-
-## Running the Application
-
-### Start the Backend
 ```bash
-# Development mode
-npm run backend:dev
-
-# Production mode
-npm run backend:start
+psql -d rapid_response_db -f backend/migrations/001_initial_schema.sql
 ```
 
-### Start the Frontend
-```bash
-# Android
-npm run android
+### 2. Android app
 
-# iOS
-npm run ios
-```
+1. Copy `local.properties.example` to `local.properties` and fill in:
+   - `MAPS_API_KEY` — a Google Maps SDK key (Google Cloud Console)
+   - `API_BASE_URL` — where your backend is reachable from the device/emulator
+     (`http://10.0.2.2:5000/` reaches your host machine's localhost from the emulator)
+2. `app/google-services.json` is already wired to the `ai-rapid-response` Firebase project.
+   If you're pointing at your own Firebase project, replace it and enable
+   Email/Password sign-in under Authentication.
+3. Open the project root in Android Studio, or build from the CLI:
+   ```bash
+   ./gradlew assembleDebug
+   ```
 
 ## Project Structure
 
 ```
 Rapid-Response/
-├── src/                    # React Native source code
-│   ├── navigation/         # Navigation components
-│   ├── screens/           # Screen components
-│   └── services/          # API and Firebase services
-├── backend/               # Node.js backend
-│   ├── src/
-│   │   ├── routes/        # API routes
-│   │   ├── middleware/    # Express middleware
-│   │   ├── db/           # Database queries
-│   │   └── server.ts     # Main server file
-│   └── package.json
-├── android/               # Android-specific files
-├── ios/                   # iOS-specific files
-└── package.json           # Frontend dependencies
+├── app/                      # Native Android app (Kotlin/Compose)
+│   └── src/main/java/com/example/rapidresponse/
+│       ├── auth/             # Firebase-backed AuthViewModel
+│       ├── data/             # Static UI data (nav drawer items)
+│       ├── di/                # Hilt modules
+│       ├── model/             # DTOs shared with the backend API
+│       ├── navigation/        # NavHost + screen routes
+│       ├── network/           # Retrofit service + Firebase-token interceptor
+│       ├── repository/        # Backend API repository
+│       └── screens/           # auth, home, alert, contacts, location, history
+├── backend/                   # Node.js/Express API
+│   └── src/
+│       ├── config/firebaseAdmin.ts
+│       ├── middleware/         # Firebase token verification + user resolution
+│       ├── routes/             # auth (sync), alerts, contacts, users
+│       └── db/
+└── legacy-react-native/        # Previous React Native implementation (kept for reference)
 ```
 
-## 🔧 API Endpoints
+## API Endpoints
 
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
+### Auth
+- `POST /api/auth/sync` — creates/updates the Postgres profile row for the signed-in
+  Firebase user (called once after register/login)
 
 ### Alerts
-- `POST /api/alerts` - Create new alert
-- `GET /api/alerts/recent` - Get recent alerts
+- `POST /api/alerts` — create new alert
+- `GET /api/alerts/recent` — recent alerts (24h)
 
 ### Contacts
-- `GET /api/contacts` - Get available contacts
-- `POST /api/contacts` - Create new contact
-- `PATCH /api/contacts/:id/availability` - Update contact availability
+- `GET /api/contacts` — available emergency contacts
+- `POST /api/contacts` — create new contact
+- `PATCH /api/contacts/:id/availability` — update availability
 
 ### Users
-- `GET /api/users/profile` - Get user profile
-- `PUT /api/users/profile` - Update user profile
-- `GET /api/users/alerts` - Get user's alert history
+- `GET /api/users/profile` / `PUT /api/users/profile`
+- `GET /api/users/alerts` — the caller's alert history
 
-## Security Features
+All routes except `/api/auth/sync` require a Postgres profile to already exist (call sync
+first) and a `Authorization: Bearer <Firebase ID token>` header.
 
-- JWT-based authentication
-- Password hashing with bcrypt
-- Rate limiting
-- Helmet security headers
-- CORS configuration
-- Input validation
+## Known gaps
+
+Crime/alert statistics & charts, prevention tips, SMS confirmation on submission, and PDF
+export of reports aren't built here yet — planned as follow-up work.
 
 ## Testing
 
 ```bash
-# Frontend tests
-npm test
+# Backend
+cd backend && npm test
 
-# Backend tests (from backend directory)
-cd backend
-npm test
+# Android
+./gradlew test          # unit tests
+./gradlew connectedCheck # instrumented tests (needs a device/emulator)
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## Support
-
-For support, please contact the development team or create an issue in the repository.
-
-## Recent Fixes
-
-- Fixed duplicate App component in App.tsx
-- Created missing backend dependencies and middleware
-- Added proper TypeScript configurations
-- Created missing React Native screens and services
-- Fixed navigation structure
-- Added comprehensive error handling
-- Created environment configuration templates

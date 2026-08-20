@@ -1,12 +1,12 @@
 import express from 'express';
 import { pool } from '../db';
 import { queries } from '../db/queries';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, resolveUser } from '../middleware/auth';
 
 const router = express.Router();
 
 // Create new alert
-router.post('/', authenticateToken, async (req, res, next) => {
+router.post('/', authenticateToken, resolveUser, async (req, res, next) => {
   try {
     const {
       type,
@@ -19,7 +19,7 @@ router.post('/', authenticateToken, async (req, res, next) => {
     } = req.body;
 
     const result = await pool.query(queries.createAlert, [
-      req.user.id,
+      req.user!.id,
       type,
       description,
       latitude,
@@ -30,17 +30,17 @@ router.post('/', authenticateToken, async (req, res, next) => {
       priority
     ]);
 
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({ success: true, data: result.rows[0] });
   } catch (error) {
     next(error);
   }
 });
 
 // Get recent alerts
-router.get('/recent', authenticateToken, async (req, res, next) => {
+router.get('/recent', authenticateToken, resolveUser, async (req, res, next) => {
   try {
     const result = await pool.query(queries.getRecentAlerts);
-    res.json(result.rows);
+    res.json({ success: true, data: result.rows });
   } catch (error) {
     next(error);
   }
