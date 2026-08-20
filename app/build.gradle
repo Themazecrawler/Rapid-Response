@@ -120,6 +120,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:20.4.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4'
 
+    // Firebase Cloud Messaging (push notifications for security/admin on new alerts)
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+
     // Charts (Statistics screen)
     implementation "com.patrykandpatrick.vico:compose-m3:1.6.4"
 }

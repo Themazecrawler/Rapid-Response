@@ -63,3 +63,18 @@ export const resolveUser = async (
     return next(error);
   }
 };
+
+// Must run after resolveUser (needs req.user.role populated). Used to restrict
+// campus-wide views - like the incoming-alerts feed security/admin get push notifications
+// for - to the roles that should actually see every reported alert.
+export const requireRole = (...roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user?.role || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: { message: 'You do not have permission to access this resource' }
+      });
+    }
+    return next();
+  };
+};

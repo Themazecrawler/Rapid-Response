@@ -1,5 +1,7 @@
 package com.example.rapidresponse.screens.home
 
+import android.Manifest
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,11 +27,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rapidresponse.auth.AuthViewModel
 import com.example.rapidresponse.data.navigationDrawerItems
+import com.example.rapidresponse.data.staffNavigationDrawerItems
 import com.example.rapidresponse.navigation.Screen
 import com.example.rapidresponse.ui.theme.Red
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -37,10 +43,28 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     val user by authViewModel.user.collectAsState()
+    val role by authViewModel.role.collectAsState()
     val pendingCount by homeViewModel.pendingCount.collectAsState()
     val hasFailed by homeViewModel.hasFailed.collectAsState()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    val drawerItems = remember(role) {
+        if (role == "security" || role == "admin") {
+            navigationDrawerItems + staffNavigationDrawerItems
+        } else {
+            navigationDrawerItems
+        }
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val notificationPermission = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
+        LaunchedEffect(Unit) {
+            if (!notificationPermission.status.isGranted) {
+                notificationPermission.launchPermissionRequest()
+            }
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -64,7 +88,7 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(30.dp),
                     modifier = Modifier.padding(horizontal = 20.dp)
                 ) {
-                    navigationDrawerItems.forEach { item ->
+                    drawerItems.forEach { item ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -193,7 +217,7 @@ fun HomeScreen(
                 Text("Quick Actions", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(12.dp))
 
-                navigationDrawerItems.forEach { item ->
+                drawerItems.forEach { item ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
