@@ -17,8 +17,8 @@ export const pool = new Pool({
 
 // Test database connection
 pool.connect((err, client, release) => {
-  if (err) {
-    return console.error('Error acquiring client', err.stack);
+  if (err || !client) {
+    return console.error('Error acquiring client', err?.stack);
   }
   client.query('SELECT NOW()', (err, result) => {
     release();

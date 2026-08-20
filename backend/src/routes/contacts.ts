@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { pool } from '../db';
 import { queries } from '../db/queries';
 import { authenticateToken } from '../middleware/auth';
@@ -26,13 +26,13 @@ router.post('/', authenticateToken, [
   body('phone').notEmpty().trim(),
   body('email').isEmail().normalizeEmail(),
   body('department').notEmpty().trim()
-], async (req, res, next) => {
+], async (req: Request, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        success: false, 
-        error: { message: 'Validation failed', details: errors.array() } 
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Validation failed', details: errors.array() }
       });
     }
 
@@ -46,12 +46,12 @@ router.post('/', authenticateToken, [
       department
     ]);
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: result.rows[0]
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
@@ -67,19 +67,19 @@ router.patch('/:id/availability', authenticateToken, async (req, res, next) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        error: { message: 'Contact not found' } 
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Contact not found' }
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: result.rows[0]
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
-export default router; 
+export default router;

@@ -1,8 +1,12 @@
 export const queries = {
   // User queries
-  createUser: `
+  upsertUser: `
     INSERT INTO users (auth_id, email, display_name, role, campus)
     VALUES ($1, $2, $3, $4, $5)
+    ON CONFLICT (auth_id) DO UPDATE
+      SET display_name = EXCLUDED.display_name,
+          campus = EXCLUDED.campus,
+          last_login = CURRENT_TIMESTAMP
     RETURNING *
   `,
 

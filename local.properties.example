@@ -1,0 +1,9 @@
+# Copy this file to local.properties (which is gitignored) and fill in real values.
+# local.properties is also where Android Studio writes sdk.dir automatically.
+
+# Google Maps SDK key, used by the "My Location" screen. Get one from the Google Cloud Console.
+MAPS_API_KEY=YOUR_MAPS_API_KEY
+
+# Base URL of the Rapid Response backend (see backend/). Use 10.0.2.2 to reach your host
+# machine's localhost from the Android emulator.
+API_BASE_URL=http://10.0.2.2:5000/
