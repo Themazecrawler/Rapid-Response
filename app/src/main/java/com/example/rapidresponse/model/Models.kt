@@ -26,7 +26,10 @@ data class EmergencyAlert(
     val status: String? = null,
     val createdAt: String? = null,
     val reporterName: String? = null,
-    val reporterPhone: String? = null
+    val reporterPhone: String? = null,
+    // Client-generated dedup key so a WorkManager retry of an alert that actually already
+    // landed doesn't create a duplicate row server-side.
+    val clientAlertId: String? = null
 )
 
 data class EmergencyContact(

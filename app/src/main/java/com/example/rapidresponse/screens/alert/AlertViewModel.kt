@@ -3,7 +3,7 @@ package com.example.rapidresponse.screens.alert
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rapidresponse.model.EmergencyAlert
-import com.example.rapidresponse.repository.RapidResponseRepository
+import com.example.rapidresponse.queue.AlertQueueManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,21 +19,21 @@ sealed class SubmitState {
 
 @HiltViewModel
 class AlertViewModel @Inject constructor(
-    private val repository: RapidResponseRepository
+    private val queueManager: AlertQueueManager
 ) : ViewModel() {
 
     private val _submitState = MutableStateFlow<SubmitState>(SubmitState.Idle)
     val submitState: StateFlow<SubmitState> = _submitState
 
+    // Queuing is a local DB write, not a network call, so this can't fail the way a direct
+    // API call could - "success" here means "durably saved and will be delivered," not
+    // "the server has it yet." Actual delivery happens in the background via
+    // AlertSyncWorker and is visible on the History screen.
     fun submitAlert(alert: EmergencyAlert) {
         viewModelScope.launch {
             _submitState.value = SubmitState.Submitting
-            val result = repository.submitAlert(alert)
-            _submitState.value = if (result.e == null) {
-                SubmitState.Success
-            } else {
-                SubmitState.Error(result.e?.message ?: "Failed to submit alert")
-            }
+            queueManager.enqueue(alert)
+            _submitState.value = SubmitState.Success
         }
     }
 

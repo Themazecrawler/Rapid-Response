@@ -18,4 +18,5 @@ export const mapAlertRow = (row: any) => ({
   resolvedAt: row.resolved_at,
   reporterName: row.reporter_name ?? null,
   reporterPhone: row.reporter_phone ?? null,
+  clientAlertId: row.client_alert_id ?? null,
 });

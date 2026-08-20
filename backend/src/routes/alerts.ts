@@ -7,7 +7,9 @@ import { sendAlertConfirmationSms } from '../services/sms';
 
 const router = express.Router();
 
-// Create new alert
+// Create new alert. Idempotent on clientAlertId: the Android app queues alerts locally and
+// retries with backoff until delivery is confirmed, so this route may see the same
+// clientAlertId more than once if an earlier attempt succeeded but its response was lost.
 router.post('/', authenticateToken, resolveUser, async (req, res, next) => {
   try {
     const {
@@ -18,10 +20,18 @@ router.post('/', authenticateToken, resolveUser, async (req, res, next) => {
       building,
       floor,
       priority,
-      reporterPhone
+      reporterPhone,
+      clientAlertId
     } = req.body;
 
-    const result = await pool.query(queries.createAlert, [
+    if (!clientAlertId) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'clientAlertId is required' }
+      });
+    }
+
+    const insertResult = await pool.query(queries.createAlert, [
       req.user!.id,
       type,
       description,
@@ -31,21 +41,30 @@ router.post('/', authenticateToken, resolveUser, async (req, res, next) => {
       floor,
       'active',
       priority,
-      reporterPhone ?? null
+      reporterPhone ?? null,
+      clientAlertId
     ]);
 
-    const alert = result.rows[0];
+    let alert = insertResult.rows[0];
+    const isNewAlert = Boolean(alert);
 
-    if (reporterPhone) {
-      // Fire-and-forget: a failed/unconfigured SMS provider shouldn't fail alert creation.
+    if (!alert) {
+      // Conflict on client_alert_id: this alert already exists from an earlier attempt.
+      const existing = await pool.query(queries.getAlertByClientId, [clientAlertId]);
+      alert = existing.rows[0];
+    }
+
+    if (isNewAlert && reporterPhone) {
+      // Fire-and-forget, and only on the first successful insert - a retried duplicate
+      // request must not re-send the confirmation SMS.
       sendAlertConfirmationSms(reporterPhone, type).catch((error) => {
         console.error('Failed to send alert confirmation SMS:', error);
       });
     }
 
-    res.status(201).json({ success: true, data: mapAlertRow(alert) });
+    return res.status(201).json({ success: true, data: mapAlertRow(alert) });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 

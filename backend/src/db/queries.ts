@@ -15,13 +15,22 @@ export const queries = {
   `,
 
   // Alert queries
+
+  // ON CONFLICT DO NOTHING makes retried submissions (same client_alert_id) safe: a retry
+  // of an alert that already landed returns zero rows instead of erroring or duplicating,
+  // and the caller falls back to getAlertByClientId to fetch the original.
   createAlert: `
     INSERT INTO emergency_alerts (
       user_id, type, description, latitude, longitude,
-      building, floor, status, priority, reporter_phone
+      building, floor, status, priority, reporter_phone, client_alert_id
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    ON CONFLICT (client_alert_id) DO NOTHING
     RETURNING *
+  `,
+
+  getAlertByClientId: `
+    SELECT * FROM emergency_alerts WHERE client_alert_id = $1
   `,
 
   getRecentAlerts: `

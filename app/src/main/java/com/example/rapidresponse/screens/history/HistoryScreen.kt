@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,12 +20,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.rapidresponse.local.PendingAlertEntity
+import com.example.rapidresponse.local.PendingAlertStatus
 import com.example.rapidresponse.model.EmergencyAlert
 import com.example.rapidresponse.ui.theme.Red
 
 @Composable
 fun HistoryScreen(navController: NavController, viewModel: HistoryViewModel = hiltViewModel()) {
     val alerts by viewModel.alerts.collectAsState()
+    val pendingAlerts by viewModel.pendingAlerts.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
 
@@ -39,11 +44,82 @@ fun HistoryScreen(navController: NavController, viewModel: HistoryViewModel = hi
             loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Red)
             }
-            error != null -> Text(error ?: "Something went wrong", color = MaterialTheme.colorScheme.error)
-            alerts.isEmpty() -> Text("No alerts reported yet.")
+            error != null && pendingAlerts.isEmpty() -> Text(
+                error ?: "Something went wrong",
+                color = MaterialTheme.colorScheme.error
+            )
+            alerts.isEmpty() && pendingAlerts.isEmpty() -> Text("No alerts reported yet.")
             else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(pendingAlerts, key = { it.clientAlertId }) { pending ->
+                    PendingAlertRow(
+                        pending = pending,
+                        onRetry = { viewModel.retry(pending.clientAlertId) },
+                        onDiscard = { viewModel.discard(pending.clientAlertId) }
+                    )
+                }
                 items(alerts) { alert -> AlertRow(alert) }
             }
+        }
+    }
+}
+
+@Composable
+private fun PendingAlertRow(
+    pending: PendingAlertEntity,
+    onRetry: () -> Unit,
+    onDiscard: () -> Unit
+) {
+    val failed = pending.status == PendingAlertStatus.FAILED
+    val accent = if (failed) MaterialTheme.colorScheme.error else Color(0xFFF9A825)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(accent.copy(alpha = 0.08f))
+            .padding(14.dp)
+    ) {
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Text(pending.type, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    if (failed) Icons.Filled.ErrorOutline else Icons.Filled.Schedule,
+                    contentDescription = null,
+                    tint = accent,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    if (failed) "Not delivered" else "Delivering...",
+                    color = accent,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+        Text(pending.description, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp))
+        if (!pending.building.isNullOrBlank()) {
+            Text("Building: ${pending.building}${pending.floor?.let { " · Floor $it" } ?: ""}", fontSize = 12.sp)
+        }
+        if (failed) {
+            Text(
+                "Saved on this device, but campus security hasn't received it yet" +
+                    (pending.lastError?.let { " ($it)" } ?: "."),
+                fontSize = 11.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+            Row(modifier = Modifier.padding(top = 8.dp)) {
+                TextButton(onClick = onRetry) { Text("Retry now", color = Red) }
+                TextButton(onClick = onDiscard) { Text("Discard", color = Color.Gray) }
+            }
+        } else {
+            Text(
+                "Saved on this device and being delivered automatically.",
+                fontSize = 11.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
 }
