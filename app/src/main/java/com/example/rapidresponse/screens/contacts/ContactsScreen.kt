@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -29,6 +28,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rapidresponse.model.EmergencyContact
+import com.example.rapidresponse.ui.components.ScreenHeader
 import com.example.rapidresponse.ui.theme.Red
 
 @Composable
@@ -38,12 +38,7 @@ fun ContactsScreen(navController: NavController, viewModel: ContactsViewModel = 
     val error by viewModel.error.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 10.dp)) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-            }
-            Text("Emergency Contacts", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        }
+        ScreenHeader(title = "Emergency Contacts", onBack = { navController.popBackStack() })
         Text(
             "Campus security and response staff you can call directly.",
             fontSize = 13.sp,

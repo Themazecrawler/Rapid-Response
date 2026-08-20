@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
@@ -23,6 +22,7 @@ import androidx.navigation.NavController
 import com.example.rapidresponse.local.PendingAlertEntity
 import com.example.rapidresponse.local.PendingAlertStatus
 import com.example.rapidresponse.model.EmergencyAlert
+import com.example.rapidresponse.ui.components.ScreenHeader
 import com.example.rapidresponse.ui.theme.Red
 
 @Composable
@@ -33,12 +33,7 @@ fun HistoryScreen(navController: NavController, viewModel: HistoryViewModel = hi
     val error by viewModel.error.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 10.dp)) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-            }
-            Text("Alert History", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        }
+        ScreenHeader(title = "Alert History", onBack = { navController.popBackStack() })
 
         when {
             loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rapidresponse.model.AlertStats
 import com.example.rapidresponse.model.CountEntry
+import com.example.rapidresponse.ui.components.ScreenHeader
 import com.example.rapidresponse.ui.theme.Blue
 import com.example.rapidresponse.ui.theme.Red
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
@@ -50,12 +49,7 @@ fun StatisticsScreen(navController: NavController, viewModel: StatisticsViewMode
     val error by viewModel.error.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 10.dp)) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-            }
-            Text("Alert Statistics", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        }
+        ScreenHeader(title = "Alert Statistics", onBack = { navController.popBackStack() })
         Text(
             "A campus-wide picture of reported alerts: what's most common, how urgent, and when.",
             fontSize = 13.sp,
