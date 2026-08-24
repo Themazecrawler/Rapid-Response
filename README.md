@@ -195,13 +195,6 @@ refresh - nothing pushed a notification to anyone. Now:
   anywhere in the app: the route requires `security`/`admin` server-side
   (`requireRole` middleware), and the drawer entry only appears client-side for those roles.
 
-## Known gaps
-
-Prevention tips and admin PDF export of reports aren't built yet.
-"AI/ML crime prediction" was considered but deliberately deferred — see discussion in the
-project history; a simple statistical/clustering view of real alert data (already covered by
-the Statistics screen) gets most of the value without the data-volume and bias problems a real
-predictive model would have this early on.
 
 ## Testing
 
