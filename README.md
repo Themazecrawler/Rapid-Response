@@ -10,19 +10,19 @@ not deleted).
 ## Features
 
 - **Emergency Alert System**: Real-time alerts with GPS location, building/floor, type and
-  priority. Submission is offline-resilient — see "Offline-resilient alert delivery" below.
+  priority. Submission is offline-resilient (see "Offline-resilient alert delivery" below).
 - **Firebase Authentication**: Email/password sign-in and registration.
 - **Emergency Contacts**: Campus security contact directory with one-tap calling.
 - **My Location**: Live GPS position on a Google Map, with one-tap sharing and a list of
   nearby police stations (Google Places) with distance and directions.
 - **Alert History**: Past alerts you've submitted, with status.
-- **Alert Statistics**: Campus-wide charts — alerts by type, priority, and day of week.
+- **Alert Statistics**: Campus-wide charts: alerts by type, priority, and day of week.
 - **SMS Confirmation**: If you leave a phone number on an alert, the backend sends a Twilio
   SMS confirming it was received. Twilio credentials live server-side only and are never
   shipped inside the APK.
 - **Push Notifications**: security/admin staff get an immediate push notification when a new
-  alert comes in, and tapping it opens a campus-wide "Incoming Alerts" feed — see "Push
-  notifications for staff" below.
+  alert comes in, and tapping it opens a campus-wide "Incoming Alerts" feed (see "Push
+  notifications for staff" below).
 
 ## Tech Stack
 
@@ -41,7 +41,7 @@ not deleted).
 - Express.js + TypeScript
 - PostgreSQL (via `pg`)
 - Firebase Admin SDK verifies the ID token the app sends (no separate password/JWT system)
-- Twilio for SMS confirmations (optional — no-ops if unconfigured)
+- Twilio for SMS confirmations (optional, no-ops if unconfigured)
 - Helmet, CORS, rate limiting
 
 ## Setup
