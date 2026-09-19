@@ -1,5 +1,12 @@
 name: Backend CI
 
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
@@ -10,6 +17,26 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: rapid_response
+          POSTGRES_PASSWORD: ci_password
+          POSTGRES_DB: rapid_response_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U rapid_response -d rapid_response_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_USER: rapid_response
+      DB_HOST: localhost
+      DB_NAME: rapid_response_test
+      DB_PASSWORD: ci_password
+      DB_PORT: 5432
+      NODE_ENV: test
     defaults:
       run:
         working-directory: backend
@@ -17,11 +44,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run db:migrate
       - run: npm run lint
       - run: npm run format:check
       - run: npm run build
       - run: npm test
+      - name: Build production container
+        run: docker build --tag rapid-response-backend:ci .

@@ -2,8 +2,7 @@ import { Request, Response } from 'express';
 
 const verifyIdToken = jest.fn();
 jest.mock('../config/firebaseAdmin', () => ({
-  __esModule: true,
-  default: { auth: () => ({ verifyIdToken }) },
+  firebaseAuth: { verifyIdToken },
 }));
 
 const poolQuery = jest.fn();
@@ -34,7 +33,7 @@ describe('authenticateToken', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('rejects with 403 when the token fails verification', async () => {
+  it('rejects with 401 when the token fails verification', async () => {
     verifyIdToken.mockRejectedValue(new Error('bad token'));
     const req = { headers: { authorization: 'Bearer invalid' } } as Request;
     const res = mockRes();
@@ -42,7 +41,7 @@ describe('authenticateToken', () => {
 
     await authenticateToken(req, res, next);
 
-    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.status).toHaveBeenCalledWith(401);
     expect(next).not.toHaveBeenCalled();
   });
 

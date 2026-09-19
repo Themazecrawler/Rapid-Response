@@ -7,6 +7,7 @@ import androidx.work.WorkerParameters
 import com.example.rapidresponse.local.PendingAlertDao
 import com.example.rapidresponse.local.PendingAlertStatus
 import com.example.rapidresponse.model.EmergencyAlert
+import com.example.rapidresponse.network.ApiException
 import com.example.rapidresponse.repository.RapidResponseRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -52,18 +53,20 @@ class AlertSyncWorker @AssistedInject constructor(
             return Result.success()
         }
 
+        val error = result.e
         val attempts = pending.attemptCount + 1
-        return if (attempts >= MAX_ATTEMPTS) {
+        val isPermanentFailure = error is ApiException && !error.isRetryable
+        return if (isPermanentFailure || attempts >= MAX_ATTEMPTS) {
             dao.update(
                 pending.copy(
                     attemptCount = attempts,
                     status = PendingAlertStatus.FAILED,
-                    lastError = result.e?.message
+                    lastError = error?.message
                 )
             )
             Result.failure()
         } else {
-            dao.update(pending.copy(attemptCount = attempts, lastError = result.e?.message))
+            dao.update(pending.copy(attemptCount = attempts, lastError = error?.message))
             Result.retry()
         }
     }

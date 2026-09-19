@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import admin from '../config/firebaseAdmin';
+import { firebaseAuth } from '../config/firebaseAdmin';
 import { pool } from '../db';
 
 export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
@@ -14,14 +14,14 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
   }
 
   try {
-    const decoded = await admin.auth().verifyIdToken(token);
+    const decoded = await firebaseAuth.verifyIdToken(token);
     req.user = {
       firebaseUid: decoded.uid,
       email: decoded.email ?? null,
     };
     return next();
   } catch (error) {
-    return res.status(403).json({
+    return res.status(401).json({
       success: false,
       error: { message: 'Invalid or expired token' },
     });

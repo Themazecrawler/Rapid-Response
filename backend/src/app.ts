@@ -7,12 +7,31 @@ import authRoutes from './routes/auth';
 import alertRoutes from './routes/alerts';
 import contactRoutes from './routes/contacts';
 import userRoutes from './routes/users';
+import systemRoutes from './routes/system';
+import { requestTelemetry } from './observability';
 
 const app = express();
 
+const allowedOrigins = new Set(
+  (process.env.CORS_ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+);
+
 app.use(helmet());
-app.use(cors());
-app.use(express.json());
+app.use(requestTelemetry);
+app.use(
+  cors({
+    origin: (origin, callback) => callback(null, !origin || allowedOrigins.has(origin)),
+  })
+);
+app.use(express.json({ limit: '64kb' }));
+app.use((_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+app.use(systemRoutes);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -20,10 +39,22 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-app.use('/api/auth', authRoutes);
-app.use('/api/alerts', alertRoutes);
-app.use('/api/contacts', contactRoutes);
-app.use('/api/users', userRoutes);
+const mountApi = (prefix: string) => {
+  app.use(`${prefix}/auth`, authRoutes);
+  app.use(`${prefix}/alerts`, alertRoutes);
+  app.use(`${prefix}/contacts`, contactRoutes);
+  app.use(`${prefix}/users`, userRoutes);
+};
+
+mountApi('/api/v1');
+mountApi('/api'); // Backward-compatible alias for existing mobile installs.
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: { message: 'Route not found', requestId: req.requestId },
+  });
+});
 
 app.use(errorHandler);
 

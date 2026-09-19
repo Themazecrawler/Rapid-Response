@@ -1,4 +1,4 @@
-import admin from '../config/firebaseAdmin';
+import { firebaseMessaging } from '../config/firebaseAdmin';
 import { pool } from '../db';
 import { queries } from '../db/queries';
 
@@ -29,7 +29,7 @@ export const notifyStaffOfNewAlert = async (
     return;
   }
 
-  const response = await admin.messaging().sendEachForMulticast({
+  const response = await firebaseMessaging.sendEachForMulticast({
     tokens,
     data: {
       type: 'new_alert',

@@ -5,6 +5,7 @@ import 'express';
 declare global {
   namespace Express {
     interface Request {
+      requestId: string;
       user?: {
         firebaseUid: string;
         email: string | null;

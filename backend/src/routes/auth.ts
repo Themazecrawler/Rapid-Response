@@ -12,7 +12,10 @@ const router = express.Router();
 router.post(
   '/sync',
   authenticateToken,
-  [body('displayName').notEmpty().trim(), body('campus').notEmpty().trim()],
+  [
+    body('displayName').isString().trim().notEmpty().isLength({ max: 255 }),
+    body('campus').isString().trim().notEmpty().isLength({ max: 255 }),
+  ],
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);

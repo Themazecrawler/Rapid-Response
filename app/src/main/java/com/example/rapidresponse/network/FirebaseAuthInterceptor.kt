@@ -23,20 +23,40 @@ class FirebaseAuthInterceptor @Inject constructor(
             return chain.proceed(request)
         }
 
-        val token = try {
-            Tasks.await(user.getIdToken(false), 10, TimeUnit.SECONDS).token
-        } catch (e: Exception) {
-            null
-        }
+        val token = getToken(forceRefresh = false)
 
         val authenticatedRequest = if (token != null) {
             request.newBuilder()
-                .addHeader("Authorization", "Bearer $token")
+                .header("Authorization", "Bearer $token")
                 .build()
         } else {
             request
         }
 
-        return chain.proceed(authenticatedRequest)
+        val response = chain.proceed(authenticatedRequest)
+        if (response.code != 401 || token == null) {
+            return response
+        }
+
+        val refreshedToken = getToken(forceRefresh = true)
+        if (refreshedToken == null || refreshedToken == token) {
+            return response
+        }
+
+        response.close()
+        return chain.proceed(
+            request.newBuilder()
+                .header("Authorization", "Bearer $refreshedToken")
+                .build()
+        )
+    }
+
+    private fun getToken(forceRefresh: Boolean): String? {
+        val user = firebaseAuth.currentUser ?: return null
+        return try {
+            Tasks.await(user.getIdToken(forceRefresh), 10, TimeUnit.SECONDS).token
+        } catch (_: Exception) {
+            null
+        }
     }
 }

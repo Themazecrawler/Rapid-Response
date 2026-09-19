@@ -2,6 +2,7 @@ package com.example.rapidresponse.screens.location
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -56,6 +57,12 @@ fun LocationScreen(navController: NavController) {
     LaunchedEffect(permissionState.status.isGranted) {
         if (!permissionState.status.isGranted) {
             permissionState.launchPermissionRequest()
+            return@LaunchedEffect
+        }
+        if (
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
             return@LaunchedEffect
         }
         val client = LocationServices.getFusedLocationProviderClient(context)

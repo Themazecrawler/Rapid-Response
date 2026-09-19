@@ -12,6 +12,7 @@ import com.example.rapidresponse.local.PendingAlertEntity
 import com.example.rapidresponse.local.PendingAlertStatus
 import com.example.rapidresponse.model.DataOrException
 import com.example.rapidresponse.model.EmergencyAlert
+import com.example.rapidresponse.network.ApiException
 import com.example.rapidresponse.repository.RapidResponseRepository
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -114,5 +115,20 @@ class AlertSyncWorkerTest {
         assertEquals(8, updated.captured.attemptCount)
         assertEquals(PendingAlertStatus.FAILED, updated.captured.status)
         assertEquals("still down", updated.captured.lastError)
+    }
+
+    @Test
+    fun `does not retry a permanent client error`() = runTest {
+        coEvery { dao.getById("id-1") } returns samplePending(attemptCount = 0)
+        coEvery { repository.submitAlert(any()) } returns
+            DataOrException(e = ApiException(409, "clientAlertId has already been used"))
+        val updated = slot<PendingAlertEntity>()
+        coEvery { dao.update(capture(updated)) } returns Unit
+
+        val result = buildWorker("id-1").doWork()
+
+        assertEquals(ListenableWorker.Result.failure(), result)
+        assertEquals(1, updated.captured.attemptCount)
+        assertEquals(PendingAlertStatus.FAILED, updated.captured.status)
     }
 }
