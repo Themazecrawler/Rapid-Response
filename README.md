@@ -82,9 +82,10 @@ admin UI for role management yet).
      **Places API** enabled (Google Cloud Console) — the Location screen uses both
    - `API_BASE_URL` — where your backend is reachable from the device/emulator
      (`http://10.0.2.2:5000/` reaches your host machine's localhost from the emulator)
-2. `app/google-services.json` is already wired to the `ai-rapid-response` Firebase project.
-   If you're pointing at your own Firebase project, replace it and enable
-   Email/Password sign-in under Authentication.
+2. Copy `app/google-services.json.example` to `app/google-services.json` and fill it in with
+   your own Firebase project's config (Firebase Console → Project settings → Your apps →
+   download `google-services.json`), then enable Email/Password sign-in under Authentication.
+   This file is gitignored — it's not meant to be committed.
 3. Open the project root in Android Studio, or build from the CLI:
    ```bash
    ./gradlew assembleDebug
