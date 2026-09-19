@@ -5,8 +5,6 @@ export interface AppError extends Error {
   isOperational?: boolean;
 }
 
-// The unused 4th param is required so Express recognizes this as error-handling
-// middleware (detected by function arity, not by name).
 export const errorHandler = (err: AppError, req: Request, res: Response, _next: NextFunction) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
