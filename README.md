@@ -4,9 +4,6 @@ A native Android app (Kotlin + Jetpack Compose) for campus emergency alerting, b
 Node.js/Express + PostgreSQL API. Firebase owns identity, the app talks to its backend/Maps/etc.
 directly over Retrofit, and everything is built with Compose + Hilt.
 
-Previous React Native version has been moved to `legacy-react-native/` (kept for reference,
-not deleted).
-
 ## Features
 
 - **Emergency Alert System**: Real-time alerts with GPS location, building/floor, type and
@@ -117,7 +114,7 @@ Rapid-Response/
 │       ├── services/           # sms.ts (Twilio), push.ts (FCM to staff)
 │       ├── utils/serializers.ts # snake_case DB rows -> camelCase API responses
 │       └── db/
-└── legacy-react-native/        # Previous React Native implementation (kept for reference)
+└── .github/workflows/          # CI: backend.yml, android.yml
 ```
 
 ## API Endpoints
@@ -201,9 +198,16 @@ refresh - nothing pushed a notification to anyone. Now:
 
 ```bash
 # Backend
-cd backend && npm test
+cd backend
+npm test                # jest + supertest
+npm run lint            # eslint
+npm run format:check    # prettier (npm run format to fix)
 
 # Android
-./gradlew test          # unit tests
-./gradlew connectedCheck # instrumented tests (needs a device/emulator)
+./gradlew testDebugUnitTest   # JUnit/MockK/Robolectric unit tests
+./gradlew ktlintCheck         # style check (./gradlew ktlintFormat to fix)
 ```
+
+CI (GitHub Actions) runs lint, formatting, build and tests for both halves on every push and
+pull request. Because `app/google-services.json` and `local.properties` are gitignored, the
+Android workflow builds from `google-services.json.example` and `local.properties.example`.
