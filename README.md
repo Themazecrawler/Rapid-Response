@@ -23,5 +23,3 @@ project in Android Studio or run `./gradlew assembleDebug`.
 cd backend && npm test
 ./gradlew testDebugUnitTest
 ```
-
-More detail on design and operations is in [`docs/`](docs).
