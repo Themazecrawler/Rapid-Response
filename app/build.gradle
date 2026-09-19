@@ -93,7 +93,7 @@ dependencies {
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
     testImplementation 'app.cash.turbine:turbine:1.0.0'
     testImplementation 'org.robolectric:robolectric:4.11.1'
-    testImplementation 'com.squareup.okhttp3:mockwebserver:5.0.0-alpha.2'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:5.5.0'
     testImplementation 'androidx.test:core:1.5.0'
     testImplementation 'androidx.work:work-testing:2.8.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
@@ -134,9 +134,9 @@ dependencies {
     // Retrofit / networking for the Rapid Response backend API
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation "com.squareup.okhttp3:okhttp:5.0.0-alpha.2"
-    implementation "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2"
-    implementation "com.squareup.okhttp3:okhttp-sse:5.0.0-alpha.2"
+    implementation "com.squareup.okhttp3:okhttp:5.5.0"
+    implementation "com.squareup.okhttp3:logging-interceptor:5.5.0"
+    implementation "com.squareup.okhttp3:okhttp-sse:5.5.0"
 
     // Firebase Auth (identity provider)
     implementation platform('com.google.firebase:firebase-bom:31.3.0')
