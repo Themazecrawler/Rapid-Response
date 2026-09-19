@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth';
 import alertRoutes from './routes/alerts';
+import alertStreamRoutes from './routes/alertStream';
 import contactRoutes from './routes/contacts';
 import userRoutes from './routes/users';
 import systemRoutes from './routes/system';
@@ -41,6 +42,7 @@ app.use(limiter);
 
 const mountApi = (prefix: string) => {
   app.use(`${prefix}/auth`, authRoutes);
+  app.use(`${prefix}/alerts`, alertStreamRoutes);
   app.use(`${prefix}/alerts`, alertRoutes);
   app.use(`${prefix}/contacts`, contactRoutes);
   app.use(`${prefix}/users`, userRoutes);

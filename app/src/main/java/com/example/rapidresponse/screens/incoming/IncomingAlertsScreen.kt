@@ -11,14 +11,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import com.example.rapidresponse.model.EmergencyAlert
 import com.example.rapidresponse.ui.components.ScreenHeader
 import com.example.rapidresponse.ui.theme.Red
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+private const val POLL_INTERVAL_MS = 60_000L
 
 // Campus-wide feed of everything reported in the last 24h - what security/admin land on when
 // they tap a push notification. Restricted server-side to security/admin (GET
@@ -28,6 +35,17 @@ fun IncomingAlertsScreen(navController: NavController, viewModel: IncomingAlerts
     val alerts by viewModel.alerts.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            launch { viewModel.streamEvents().collect { viewModel.refresh() } }
+            while (true) {
+                delay(POLL_INTERVAL_MS)
+                viewModel.refresh()
+            }
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
         ScreenHeader(title = "Incoming Alerts", onBack = { navController.popBackStack() })
