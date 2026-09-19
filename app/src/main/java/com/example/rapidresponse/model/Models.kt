@@ -46,6 +46,10 @@ data class EmergencyContact(
     val available: Boolean = true
 )
 
+data class AvailabilityRequest(
+    val available: Boolean
+)
+
 data class ApiEnvelope<T>(
     val success: Boolean,
     val data: T? = null

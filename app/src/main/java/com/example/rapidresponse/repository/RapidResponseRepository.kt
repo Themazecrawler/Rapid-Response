@@ -2,6 +2,7 @@ package com.example.rapidresponse.repository
 
 import com.example.rapidresponse.model.AlertStats
 import com.example.rapidresponse.model.ApiEnvelope
+import com.example.rapidresponse.model.AvailabilityRequest
 import com.example.rapidresponse.model.DataOrException
 import com.example.rapidresponse.model.DeviceTokenRequest
 import com.example.rapidresponse.model.EmergencyAlert
@@ -77,6 +78,15 @@ class RapidResponseRepository @Inject constructor(private val api: ApiService) {
 
     suspend fun getContacts(): DataOrException<List<EmergencyContact>, Exception> =
         safeCall("Failed to load contacts", default = emptyList()) { api.getContacts() }
+
+    suspend fun getAllContacts(): DataOrException<List<EmergencyContact>, Exception> =
+        safeCall("Failed to load contacts", default = emptyList()) { api.getAllContacts() }
+
+    suspend fun createContact(contact: EmergencyContact): DataOrException<EmergencyContact, Exception> =
+        safeCall("Failed to add contact") { api.createContact(contact) }
+
+    suspend fun setContactAvailability(id: Int, available: Boolean): DataOrException<EmergencyContact, Exception> =
+        safeCall("Failed to update contact") { api.setContactAvailability(id, AvailabilityRequest(available)) }
 
     suspend fun getAlertStats(): DataOrException<AlertStats, Exception> =
         safeCall("Failed to load statistics") { api.getAlertStats() }
