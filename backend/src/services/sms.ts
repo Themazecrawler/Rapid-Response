@@ -19,9 +19,12 @@ export const sendAlertConfirmationSms = async (
     return;
   }
 
+  const publicBaseUrl = process.env.PUBLIC_BASE_URL?.replace(/\/$/, '');
+
   await twilioClient.messages.create({
     from,
     to: toPhone,
+    ...(publicBaseUrl && { statusCallback: `${publicBaseUrl}/api/v1/webhooks/twilio/status` }),
     body:
       `Rapid Response: we've received your ${alertType} alert and campus security has been ` +
       `notified. Stay safe and keep your phone nearby.`,

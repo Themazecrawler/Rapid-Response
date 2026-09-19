@@ -6,6 +6,7 @@ import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth';
 import alertRoutes from './routes/alerts';
 import alertStreamRoutes from './routes/alertStream';
+import webhookRoutes from './routes/webhooks';
 import contactRoutes from './routes/contacts';
 import userRoutes from './routes/users';
 import systemRoutes from './routes/system';
@@ -48,6 +49,7 @@ const mountApi = (prefix: string) => {
   app.use(`${prefix}/users`, userRoutes);
 };
 
+app.use('/api/v1/webhooks', webhookRoutes);
 mountApi('/api/v1');
 mountApi('/api'); // Backward-compatible alias for existing mobile installs.
 
