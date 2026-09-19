@@ -20,7 +20,7 @@ pool.connect((err, client, release) => {
   if (err || !client) {
     return console.error('Error acquiring client', err?.stack);
   }
-  client.query('SELECT NOW()', (err, result) => {
+  client.query('SELECT NOW()', (err, _result) => {
     release();
     if (err) {
       return console.error('Error executing query', err.stack);

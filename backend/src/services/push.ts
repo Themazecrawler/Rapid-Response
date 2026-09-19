@@ -51,8 +51,6 @@ export const notifyStaffOfNewAlert = async (
   });
 
   if (staleTokens.length > 0) {
-    await Promise.all(
-      staleTokens.map((token) => pool.query(queries.deleteDeviceToken, [token]))
-    );
+    await Promise.all(staleTokens.map((token) => pool.query(queries.deleteDeviceToken, [token])));
   }
 };

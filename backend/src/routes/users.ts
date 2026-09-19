@@ -14,7 +14,7 @@ router.get('/profile', authenticateToken, resolveUser, async (req, res, next) =>
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        error: { message: 'User not found' }
+        error: { message: 'User not found' },
       });
     }
 
@@ -27,8 +27,8 @@ router.get('/profile', authenticateToken, resolveUser, async (req, res, next) =>
         displayName: user.display_name,
         role: user.role,
         campus: user.campus,
-        createdAt: user.created_at
-      }
+        createdAt: user.created_at,
+      },
     });
   } catch (error) {
     return next(error);
@@ -48,7 +48,7 @@ router.put('/profile', authenticateToken, resolveUser, async (req, res, next) =>
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        error: { message: 'User not found' }
+        error: { message: 'User not found' },
       });
     }
 
@@ -61,8 +61,8 @@ router.put('/profile', authenticateToken, resolveUser, async (req, res, next) =>
         displayName: user.display_name,
         role: user.role,
         campus: user.campus,
-        createdAt: user.created_at
-      }
+        createdAt: user.created_at,
+      },
     });
   } catch (error) {
     return next(error);
@@ -79,7 +79,7 @@ router.get('/alerts', authenticateToken, resolveUser, async (req, res, next) => 
 
     res.json({
       success: true,
-      data: result.rows.map(mapAlertRow)
+      data: result.rows.map(mapAlertRow),
     });
   } catch (error) {
     next(error);
@@ -97,7 +97,7 @@ router.post('/device-token', authenticateToken, resolveUser, async (req, res, ne
     if (!token) {
       return res.status(400).json({
         success: false,
-        error: { message: 'token is required' }
+        error: { message: 'token is required' },
       });
     }
 
