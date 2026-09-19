@@ -1,9 +1,13 @@
 package com.example.rapidresponse.notifications
 
+import android.Manifest
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.rapidresponse.MainActivity
 import com.example.rapidresponse.R
 import com.example.rapidresponse.navigation.Screen
@@ -75,6 +79,12 @@ class RapidResponseFirebaseMessagingService : FirebaseMessagingService() {
             .setContentIntent(pendingIntent)
             .build()
 
-        NotificationManagerCompat.from(this).notify(Random.nextInt(), notification)
+        val canPostNotification =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+        if (canPostNotification) {
+            NotificationManagerCompat.from(this).notify(Random.nextInt(), notification)
+        }
     }
 }

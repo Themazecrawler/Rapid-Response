@@ -19,6 +19,7 @@ app/google-services.json
 # Backend (Node.js)
 backend/node_modules/
 backend/dist/
+backend/dist-scripts/
 backend/npm-debug.log
 backend/.env
 backend/coverage/

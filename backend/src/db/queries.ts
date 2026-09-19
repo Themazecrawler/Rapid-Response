@@ -60,7 +60,8 @@ export const queries = {
     FROM emergency_alerts ea
     JOIN users u ON ea.user_id = u.id
     WHERE ea.created_at >= NOW() - INTERVAL '24 HOURS'
-    ORDER BY ea.created_at DESC
+    ORDER BY ea.created_at DESC, ea.id DESC
+    LIMIT $1 OFFSET $2
   `,
 
   statsByType: `

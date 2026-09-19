@@ -4,15 +4,17 @@
   "description": "Backend API for Rapid Response emergency alert system",
   "main": "src/server.ts",
   "scripts": {
-    "start": "ts-node src/server.ts",
+    "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
-    "build": "tsc",
+    "build": "tsc && tsc --project tsconfig.scripts.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "lint": "eslint \"src/**/*.ts\"",
-    "lint:fix": "eslint \"src/**/*.ts\" --fix",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\""
+    "lint": "eslint \"{src,scripts}/**/*.ts\"",
+    "lint:fix": "eslint \"{src,scripts}/**/*.ts\" --fix",
+    "format": "prettier --write \"{src,scripts}/**/*.ts\"",
+    "format:check": "prettier --check \"{src,scripts}/**/*.ts\"",
+    "db:migrate": "ts-node scripts/migrate.ts",
+    "db:migrate:prod": "node dist-scripts/scripts/migrate.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -20,7 +22,7 @@
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
-    "firebase-admin": "^12.0.0",
+    "firebase-admin": "^14.4.0",
     "helmet": "^7.1.0",
     "pg": "^8.11.3",
     "twilio": "^5.0.4"
@@ -45,6 +47,6 @@
     "typescript": "^5.3.3"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   }
 }

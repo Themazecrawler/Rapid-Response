@@ -1,5 +1,12 @@
 name: Android CI
 
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
@@ -22,9 +29,14 @@ jobs:
           cp app/google-services.json.example app/google-services.json
           cp local.properties.example local.properties
       - run: chmod +x gradlew
-      - run: ./gradlew ktlintCheck testDebugUnitTest assembleDebug --stacktrace
+      - run: ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug assembleRelease --stacktrace
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: android-reports
           path: app/build/reports
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-builds
+          path: app/build/outputs/apk
+          retention-days: 14

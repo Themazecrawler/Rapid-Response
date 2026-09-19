@@ -8,6 +8,7 @@ import com.example.rapidresponse.model.EmergencyAlert
 import com.example.rapidresponse.model.EmergencyContact
 import com.example.rapidresponse.model.SyncUserRequest
 import com.example.rapidresponse.model.UserProfile
+import com.example.rapidresponse.network.ApiException
 import com.example.rapidresponse.network.ApiService
 import retrofit2.Response
 import javax.inject.Inject
@@ -29,7 +30,10 @@ class RapidResponseRepository @Inject constructor(private val api: ApiService) {
             if (response.isSuccessful) {
                 result.data = response.body()?.data ?: default
             } else {
-                result.e = Exception(response.errorBody()?.string() ?: errorMessage)
+                result.e = ApiException(
+                    response.code(),
+                    response.errorBody()?.string() ?: errorMessage
+                )
             }
         } catch (e: Exception) {
             result.e = e
@@ -50,7 +54,10 @@ class RapidResponseRepository @Inject constructor(private val api: ApiService) {
             if (response.isSuccessful) {
                 result.data = Unit
             } else {
-                result.e = Exception(response.errorBody()?.string() ?: errorMessage)
+                result.e = ApiException(
+                    response.code(),
+                    response.errorBody()?.string() ?: errorMessage
+                )
             }
         } catch (e: Exception) {
             result.e = e

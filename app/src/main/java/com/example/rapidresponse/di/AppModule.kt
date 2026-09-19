@@ -2,6 +2,7 @@ package com.example.rapidresponse.di
 
 import android.content.Context
 import androidx.work.WorkManager
+import com.example.rapidresponse.BuildConfig
 import com.example.rapidresponse.network.ApiService
 import com.example.rapidresponse.network.FirebaseAuthInterceptor
 import com.example.rapidresponse.repository.RapidResponseRepository
@@ -39,11 +40,19 @@ object AppModule {
     @Provides
     fun provideOkHttpClient(authInterceptor: FirebaseAuthInterceptor): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BASIC
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
         }
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .addInterceptor(logging)
+            .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
+            .callTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
             .build()
     }
 

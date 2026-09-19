@@ -1,7 +1,6 @@
 const sendEachForMulticast = jest.fn();
 jest.mock('../config/firebaseAdmin', () => ({
-  __esModule: true,
-  default: { messaging: () => ({ sendEachForMulticast }) },
+  firebaseMessaging: { sendEachForMulticast },
 }));
 
 const poolQuery = jest.fn();

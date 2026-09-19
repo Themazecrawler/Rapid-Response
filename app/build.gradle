@@ -37,10 +37,15 @@ android {
         }
 
         buildConfigField "String", "API_BASE_URL", "\"${localProperties.getProperty('API_BASE_URL', 'http://10.0.2.2:5000/')}\""
+        manifestPlaceholders = [usesCleartextTraffic: "false"]
     }
 
     buildTypes {
+        debug {
+            manifestPlaceholders.usesCleartextTraffic = "true"
+        }
         release {
+            manifestPlaceholders.usesCleartextTraffic = "false"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

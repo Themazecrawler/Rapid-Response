@@ -3,76 +3,120 @@ import { pool } from '../db';
 import { queries } from '../db/queries';
 import { authenticateToken, requireRole, resolveUser } from '../middleware/auth';
 import { mapAlertRow } from '../utils/serializers';
-import { sendAlertConfirmationSms } from '../services/sms';
-import { notifyStaffOfNewAlert } from '../services/push';
+import { body } from 'express-validator';
+import { getPagination, paginationValidators, rejectInvalidRequest } from '../utils/validation';
 
 const router = express.Router();
+
+const sameNullableValue = (stored: unknown, submitted: unknown): boolean =>
+  (stored ?? null) === (submitted ?? null);
+
+const sameCoordinate = (stored: unknown, submitted: unknown): boolean => {
+  if (stored == null || submitted == null) {
+    return stored == null && submitted == null;
+  }
+
+  const storedNumber = Number(stored);
+  const submittedNumber = Number(submitted);
+  return (
+    Number.isFinite(storedNumber) &&
+    Number.isFinite(submittedNumber) &&
+    storedNumber.toFixed(8) === submittedNumber.toFixed(8)
+  );
+};
+
+const isExactAlertReplay = (
+  alert: Record<string, unknown>,
+  userId: number,
+  submitted: Record<string, unknown>
+): boolean =>
+  alert.user_id === userId &&
+  alert.type === submitted.type &&
+  sameNullableValue(alert.description, submitted.description) &&
+  sameCoordinate(alert.latitude, submitted.latitude) &&
+  sameCoordinate(alert.longitude, submitted.longitude) &&
+  sameNullableValue(alert.building, submitted.building) &&
+  sameNullableValue(alert.floor, submitted.floor) &&
+  alert.priority === submitted.priority &&
+  sameNullableValue(alert.reporter_phone, submitted.reporterPhone);
+
+const validateAlert = [
+  body('clientAlertId').isUUID().withMessage('clientAlertId must be a UUID'),
+  body('type').isString().trim().notEmpty().isLength({ max: 255 }),
+  body('description').isString().trim().notEmpty().isLength({ max: 4000 }),
+  body('latitude').optional({ nullable: true }).isFloat({ min: -90, max: 90 }).toFloat(),
+  body('longitude').optional({ nullable: true }).isFloat({ min: -180, max: 180 }).toFloat(),
+  body('building').optional({ nullable: true }).isString().trim().isLength({ max: 255 }),
+  body('floor').optional({ nullable: true }).isString().trim().isLength({ max: 50 }),
+  body('priority').isIn(['high', 'medium', 'low']),
+  body('reporterPhone')
+    .optional({ nullable: true })
+    .matches(/^\+[1-9]\d{7,14}$/)
+    .withMessage('reporterPhone must use E.164 format'),
+];
 
 // Create new alert. Idempotent on clientAlertId: the Android app queues alerts locally and
 // retries with backoff until delivery is confirmed, so this route may see the same
 // clientAlertId more than once if an earlier attempt succeeded but its response was lost.
-router.post('/', authenticateToken, resolveUser, async (req, res, next) => {
-  try {
-    const {
-      type,
-      description,
-      latitude,
-      longitude,
-      building,
-      floor,
-      priority,
-      reporterPhone,
-      clientAlertId,
-    } = req.body;
+router.post(
+  '/',
+  authenticateToken,
+  ...validateAlert,
+  rejectInvalidRequest,
+  resolveUser,
+  async (req, res, next) => {
+    try {
+      const {
+        type,
+        description,
+        latitude,
+        longitude,
+        building,
+        floor,
+        priority,
+        reporterPhone,
+        clientAlertId,
+      } = req.body;
 
-    if (!clientAlertId) {
-      return res.status(400).json({
-        success: false,
-        error: { message: 'clientAlertId is required' },
-      });
-    }
+      const insertResult = await pool.query(queries.createAlert, [
+        req.user!.id,
+        type,
+        description,
+        latitude,
+        longitude,
+        building,
+        floor,
+        'active',
+        priority,
+        reporterPhone ?? null,
+        clientAlertId,
+      ]);
 
-    const insertResult = await pool.query(queries.createAlert, [
-      req.user!.id,
-      type,
-      description,
-      latitude,
-      longitude,
-      building,
-      floor,
-      'active',
-      priority,
-      reporterPhone ?? null,
-      clientAlertId,
-    ]);
+      let alert = insertResult.rows[0];
+      const isNewAlert = Boolean(alert);
 
-    let alert = insertResult.rows[0];
-    const isNewAlert = Boolean(alert);
+      if (!alert) {
+        // Conflict on client_alert_id: this alert already exists from an earlier attempt.
+        const existing = await pool.query(queries.getAlertByClientId, [clientAlertId]);
+        alert = existing.rows[0];
 
-    if (!alert) {
-      // Conflict on client_alert_id: this alert already exists from an earlier attempt.
-      const existing = await pool.query(queries.getAlertByClientId, [clientAlertId]);
-      alert = existing.rows[0];
-    }
-
-    if (isNewAlert) {
-      // Both fire-and-forget, and both only on the first successful insert - a retried
-      // duplicate request must not re-send the SMS or re-notify staff.
-      if (reporterPhone) {
-        sendAlertConfirmationSms(reporterPhone, type).catch((error) => {
-          console.error('Failed to send alert confirmation SMS:', error);
-        });
+        if (!alert || !isExactAlertReplay(alert, req.user!.id!, req.body)) {
+          return res.status(409).json({
+            success: false,
+            error: { message: 'clientAlertId has already been used' },
+          });
+        }
       }
-      notifyStaffOfNewAlert(mapAlertRow(alert), req.user!.id!).catch((error) => {
-        console.error('Failed to push-notify staff of new alert:', error);
-      });
-    }
 
-    return res.status(201).json({ success: true, data: mapAlertRow(alert) });
-  } catch (error) {
-    return next(error);
+      return res.status(isNewAlert ? 201 : 200).json({
+        success: true,
+        data: mapAlertRow(alert),
+      });
+    } catch (error) {
+      return next(error);
+    }
   }
-});
+);
 
 // Campus-wide recent alerts (not scoped to the caller) - restricted to security/admin, the
 // same audience push notifications go to, since this exposes every reported alert.
@@ -81,10 +125,18 @@ router.get(
   authenticateToken,
   resolveUser,
   requireRole('security', 'admin'),
+  ...paginationValidators,
+  rejectInvalidRequest,
   async (req, res, next) => {
     try {
-      const result = await pool.query(queries.getRecentAlerts);
-      res.json({ success: true, data: result.rows.map(mapAlertRow) });
+      const { limit, offset } = getPagination(req);
+      const result = await pool.query(queries.getRecentAlerts, [limit + 1, offset]);
+      const hasMore = result.rows.length > limit;
+      res.json({
+        success: true,
+        data: result.rows.slice(0, limit).map(mapAlertRow),
+        pagination: { limit, offset, hasMore },
+      });
     } catch (error) {
       next(error);
     }

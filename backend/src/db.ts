@@ -9,24 +9,26 @@ export const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: parseInt(process.env.DB_PORT || '5432'),
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl:
+    process.env.NODE_ENV === 'production'
+      ? {
+          rejectUnauthorized: true,
+          ...(process.env.DB_SSL_CA && {
+            ca: process.env.DB_SSL_CA.replace(/\\n/g, '\n'),
+          }),
+        }
+      : false,
   max: 20, // Maximum number of clients in the pool
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
+  statement_timeout: 5000,
+  query_timeout: 6000,
+  lock_timeout: 2000,
+  idle_in_transaction_session_timeout: 10000,
 });
 
-// Test database connection
-pool.connect((err, client, release) => {
-  if (err || !client) {
-    return console.error('Error acquiring client', err?.stack);
-  }
-  client.query('SELECT NOW()', (err, _result) => {
-    release();
-    if (err) {
-      return console.error('Error executing query', err.stack);
-    }
-    console.log('Connected to Database');
-  });
+pool.on('error', (error) => {
+  console.error('Unexpected idle PostgreSQL client error', error);
 });
 
 export default pool;
