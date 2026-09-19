@@ -1,5 +1,7 @@
 package com.example.rapidresponse.di
 
+import android.content.Context
+import androidx.work.WorkManager
 import com.example.rapidresponse.network.ApiService
 import com.example.rapidresponse.network.FirebaseAuthInterceptor
 import com.example.rapidresponse.repository.RapidResponseRepository
@@ -8,6 +10,7 @@ import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -18,6 +21,11 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Singleton
+    @Provides
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager =
+        WorkManager.getInstance(context)
 
     @Singleton
     @Provides

@@ -158,7 +158,7 @@ private fun CountBarChart(entries: List<CountEntry>, color: Color) {
             model = model,
             modifier = Modifier.fillMaxWidth().height(180.dp),
             startAxis = startAxis(guideline = null),
-            bottomAxis = bottomAxis(valueFormatter = bottomFormatter),
+            bottomAxis = bottomAxis(valueFormatter = bottomFormatter)
         )
     }
 }
@@ -176,7 +176,7 @@ private fun CountLineChart(entries: List<CountEntry>, color: Color) {
             model = model,
             modifier = Modifier.fillMaxWidth().height(180.dp),
             startAxis = startAxis(guideline = null),
-            bottomAxis = bottomAxis(valueFormatter = bottomFormatter),
+            bottomAxis = bottomAxis(valueFormatter = bottomFormatter)
         )
     }
 }
@@ -189,20 +189,20 @@ private fun rememberBarChartStyle(color: Color): ChartStyle {
             axis = ChartStyle.Axis(
                 axisLabelColor = Color(defaultColors.axisLabelColor),
                 axisGuidelineColor = Color(defaultColors.axisGuidelineColor),
-                axisLineColor = Color(defaultColors.axisLineColor),
+                axisLineColor = Color(defaultColors.axisLineColor)
             ),
             columnChart = ChartStyle.ColumnChart(
                 listOf(
                     LineComponent(
                         color.toArgb(),
                         DefaultDimens.COLUMN_WIDTH,
-                        Shapes.roundedCornerShape(DefaultDimens.COLUMN_ROUNDNESS_PERCENT),
+                        Shapes.roundedCornerShape(DefaultDimens.COLUMN_ROUNDNESS_PERCENT)
                     )
                 )
             ),
             lineChart = ChartStyle.LineChart(emptyList()),
             marker = ChartStyle.Marker(),
-            elevationOverlayColor = Color(defaultColors.elevationOverlayColor),
+            elevationOverlayColor = Color(defaultColors.elevationOverlayColor)
         )
     }
 }
@@ -215,7 +215,7 @@ private fun rememberLineChartStyle(color: Color): ChartStyle {
             axis = ChartStyle.Axis(
                 axisLabelColor = Color(defaultColors.axisLabelColor),
                 axisGuidelineColor = Color(defaultColors.axisGuidelineColor),
-                axisLineColor = Color(defaultColors.axisLineColor),
+                axisLineColor = Color(defaultColors.axisLineColor)
             ),
             columnChart = ChartStyle.ColumnChart(emptyList()),
             lineChart = ChartStyle.LineChart(
@@ -226,7 +226,7 @@ private fun rememberLineChartStyle(color: Color): ChartStyle {
                             androidx.compose.ui.graphics.Brush.verticalGradient(
                                 listOf(
                                     color.copy(alpha = DefaultAlpha.LINE_BACKGROUND_SHADER_START),
-                                    color.copy(alpha = DefaultAlpha.LINE_BACKGROUND_SHADER_END),
+                                    color.copy(alpha = DefaultAlpha.LINE_BACKGROUND_SHADER_END)
                                 )
                             )
                         )
@@ -234,7 +234,7 @@ private fun rememberLineChartStyle(color: Color): ChartStyle {
                 )
             ),
             marker = ChartStyle.Marker(),
-            elevationOverlayColor = Color(defaultColors.elevationOverlayColor),
+            elevationOverlayColor = Color(defaultColors.elevationOverlayColor)
         )
     }
 }

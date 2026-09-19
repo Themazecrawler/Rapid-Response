@@ -5,7 +5,6 @@ import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
@@ -73,7 +72,7 @@ fun HomeScreen(
             ModalDrawerSheet(
                 modifier = Modifier.width(270.dp),
                 drawerShape = RectangleShape,
-                drawerContainerColor = Red,
+                drawerContainerColor = Red
             ) {
                 Spacer(Modifier.height(40.dp))
                 Text(
