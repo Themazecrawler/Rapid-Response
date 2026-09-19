@@ -95,6 +95,22 @@ export const processNextOutboxEvent = async (): Promise<boolean> => {
   }
 };
 
+export const cleanupProcessedOutboxEvents = async (): Promise<number> => {
+  const configured = Number(process.env.OUTBOX_RETENTION_DAYS);
+  const retentionDays = Number.isFinite(configured) && configured > 0 ? configured : 30;
+  const { rowCount } = await pool.query(
+    `DELETE FROM notification_outbox
+     WHERE id IN (
+       SELECT id FROM notification_outbox
+       WHERE processed_at IS NOT NULL
+         AND processed_at < NOW() - ($1 * INTERVAL '1 day')
+       LIMIT 1000
+     )`,
+    [retentionDays]
+  );
+  return rowCount ?? 0;
+};
+
 export const startOutboxWorker = (): (() => void) => {
   const configuredBatchSize = Number(process.env.OUTBOX_BATCH_SIZE || DEFAULT_BATCH_SIZE);
   const batchSize = Number.isInteger(configuredBatchSize)
@@ -118,8 +134,24 @@ export const startOutboxWorker = (): (() => void) => {
     }
   };
 
+  const cleanup = async () => {
+    try {
+      const removed = await cleanupProcessedOutboxEvents();
+      if (removed > 0) log('info', 'outbox_retention_cleanup', { removed });
+    } catch (error) {
+      log('error', 'outbox_retention_failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  };
+
   void tick();
   const timer = setInterval(() => void tick(), 1000);
+  const cleanupTimer = setInterval(() => void cleanup(), 60 * 60 * 1000);
   timer.unref();
-  return () => clearInterval(timer);
+  cleanupTimer.unref();
+  return () => {
+    clearInterval(timer);
+    clearInterval(cleanupTimer);
+  };
 };

@@ -29,6 +29,9 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
+  "ts-node": {
+    "files": true
+  },
   "include": [
     "src/**/*"
   ],
