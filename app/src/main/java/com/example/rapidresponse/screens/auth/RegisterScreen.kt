@@ -48,33 +48,43 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
         )
 
         OutlinedTextField(
-            value = displayName, onValueChange = { displayName = it },
-            label = { Text("Full name") }, singleLine = true,
+            value = displayName,
+            onValueChange = { displayName = it },
+            label = { Text("Full name") },
+            singleLine = true,
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
         )
         OutlinedTextField(
-            value = campus, onValueChange = { campus = it },
-            label = { Text("Campus") }, singleLine = true,
+            value = campus,
+            onValueChange = { campus = it },
+            label = { Text("Campus") },
+            singleLine = true,
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
         )
         OutlinedTextField(
-            value = email, onValueChange = { email = it },
-            label = { Text("Email") }, singleLine = true,
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            singleLine = true,
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
         )
         OutlinedTextField(
-            value = password, onValueChange = { password = it },
-            label = { Text("Password") }, singleLine = true,
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
         )
         OutlinedTextField(
-            value = confirmPassword, onValueChange = { confirmPassword = it },
-            label = { Text("Confirm password") }, singleLine = true,
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            label = { Text("Confirm password") },
+            singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)

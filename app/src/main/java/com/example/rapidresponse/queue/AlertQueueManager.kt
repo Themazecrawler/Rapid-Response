@@ -1,6 +1,5 @@
 package com.example.rapidresponse.queue
 
-import android.content.Context
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
@@ -13,7 +12,6 @@ import com.example.rapidresponse.local.PendingAlertDao
 import com.example.rapidresponse.local.PendingAlertEntity
 import com.example.rapidresponse.local.PendingAlertStatus
 import com.example.rapidresponse.model.EmergencyAlert
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -26,11 +24,9 @@ import javax.inject.Singleton
 // the result of - a single network request.
 @Singleton
 class AlertQueueManager @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val dao: PendingAlertDao
+    private val dao: PendingAlertDao,
+    private val workManager: WorkManager
 ) {
-    private val workManager get() = WorkManager.getInstance(context)
-
     fun observePending(): Flow<List<PendingAlertEntity>> = dao.observeAll()
 
     suspend fun enqueue(alert: EmergencyAlert): String {

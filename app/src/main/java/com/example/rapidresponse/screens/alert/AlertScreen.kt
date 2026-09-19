@@ -19,15 +19,15 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.rapidresponse.model.EmergencyAlert
+import com.example.rapidresponse.ui.components.ScreenHeader
+import com.example.rapidresponse.ui.theme.Red
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
-import com.example.rapidresponse.model.EmergencyAlert
-import com.example.rapidresponse.ui.components.ScreenHeader
-import com.example.rapidresponse.ui.theme.Red
 
 private val alertTypes = listOf("Medical", "Fire", "Security Threat", "Crime in Progress", "Other")
 private val priorities = listOf("high", "medium", "low")
@@ -147,12 +147,14 @@ fun AlertScreen(navController: NavController, viewModel: AlertViewModel = hiltVi
         )
         Row(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = building, onValueChange = { building = it },
+                value = building,
+                onValueChange = { building = it },
                 label = { Text("Building") },
                 modifier = Modifier.weight(1f).padding(end = 8.dp)
             )
             OutlinedTextField(
-                value = floor, onValueChange = { floor = it },
+                value = floor,
+                onValueChange = { floor = it },
                 label = { Text("Floor") },
                 modifier = Modifier.weight(1f)
             )
