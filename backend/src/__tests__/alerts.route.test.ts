@@ -87,15 +87,12 @@ describe('POST /api/alerts', () => {
       throw new Error(`Unexpected query in test: ${sql}`);
     });
 
-    const res = await request(app)
-      .post('/api/alerts')
-      .set('Authorization', 'Bearer token')
-      .send({
-        type: 'medical',
-        description: 'Twisted ankle',
-        reporterPhone: '+15555550100',
-        clientAlertId: 'client-uuid-1',
-      });
+    const res = await request(app).post('/api/alerts').set('Authorization', 'Bearer token').send({
+      type: 'medical',
+      description: 'Twisted ankle',
+      reporterPhone: '+15555550100',
+      clientAlertId: 'client-uuid-1',
+    });
 
     expect(res.status).toBe(201);
     expect(res.body.data.clientAlertId).toBe('client-uuid-1');
@@ -118,14 +115,11 @@ describe('POST /api/alerts', () => {
       throw new Error(`Unexpected query in test: ${sql}`);
     });
 
-    const res = await request(app)
-      .post('/api/alerts')
-      .set('Authorization', 'Bearer token')
-      .send({
-        type: 'medical',
-        reporterPhone: '+15555550100',
-        clientAlertId: 'client-uuid-1',
-      });
+    const res = await request(app).post('/api/alerts').set('Authorization', 'Bearer token').send({
+      type: 'medical',
+      reporterPhone: '+15555550100',
+      clientAlertId: 'client-uuid-1',
+    });
 
     expect(res.status).toBe(201);
     expect(res.body.data.id).toBe(dbRow.id);
