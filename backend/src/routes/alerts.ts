@@ -22,13 +22,13 @@ router.post('/', authenticateToken, resolveUser, async (req, res, next) => {
       floor,
       priority,
       reporterPhone,
-      clientAlertId
+      clientAlertId,
     } = req.body;
 
     if (!clientAlertId) {
       return res.status(400).json({
         success: false,
-        error: { message: 'clientAlertId is required' }
+        error: { message: 'clientAlertId is required' },
       });
     }
 
@@ -43,7 +43,7 @@ router.post('/', authenticateToken, resolveUser, async (req, res, next) => {
       'active',
       priority,
       reporterPhone ?? null,
-      clientAlertId
+      clientAlertId,
     ]);
 
     let alert = insertResult.rows[0];
@@ -76,14 +76,20 @@ router.post('/', authenticateToken, resolveUser, async (req, res, next) => {
 
 // Campus-wide recent alerts (not scoped to the caller) - restricted to security/admin, the
 // same audience push notifications go to, since this exposes every reported alert.
-router.get('/recent', authenticateToken, resolveUser, requireRole('security', 'admin'), async (req, res, next) => {
-  try {
-    const result = await pool.query(queries.getRecentAlerts);
-    res.json({ success: true, data: result.rows.map(mapAlertRow) });
-  } catch (error) {
-    next(error);
+router.get(
+  '/recent',
+  authenticateToken,
+  resolveUser,
+  requireRole('security', 'admin'),
+  async (req, res, next) => {
+    try {
+      const result = await pool.query(queries.getRecentAlerts);
+      res.json({ success: true, data: result.rows.map(mapAlertRow) });
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -129,7 +135,7 @@ router.get('/stats', authenticateToken, resolveUser, async (req, res, next) => {
         byDayOfWeek: byDayOfWeekOut,
         mostCommonType: byType.rows[0]?.type ?? null,
         busiestDay: totalAlerts > 0 ? busiestDay.label : null,
-      }
+      },
     });
   } catch (error) {
     next(error);

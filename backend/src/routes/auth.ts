@@ -12,17 +12,14 @@ const router = express.Router();
 router.post(
   '/sync',
   authenticateToken,
-  [
-    body('displayName').notEmpty().trim(),
-    body('campus').notEmpty().trim()
-  ],
+  [body('displayName').notEmpty().trim(), body('campus').notEmpty().trim()],
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          error: { message: 'Validation failed', details: errors.array() }
+          error: { message: 'Validation failed', details: errors.array() },
         });
       }
 
@@ -34,7 +31,7 @@ router.post(
         email,
         displayName,
         'student',
-        campus
+        campus,
       ]);
 
       const user = result.rows[0];
@@ -46,8 +43,8 @@ router.post(
           displayName: user.display_name,
           role: user.role,
           campus: user.campus,
-          createdAt: user.created_at
-        }
+          createdAt: user.created_at,
+        },
       });
     } catch (error) {
       return next(error);

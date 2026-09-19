@@ -2,18 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import admin from '../config/firebaseAdmin';
 import { pool } from '../db';
 
-export const authenticateToken = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
     return res.status(401).json({
       success: false,
-      error: { message: 'Access token required' }
+      error: { message: 'Access token required' },
     });
   }
 
@@ -27,7 +23,7 @@ export const authenticateToken = async (
   } catch (error) {
     return res.status(403).json({
       success: false,
-      error: { message: 'Invalid or expired token' }
+      error: { message: 'Invalid or expired token' },
     });
   }
 };
@@ -35,21 +31,16 @@ export const authenticateToken = async (
 // Resolves the Postgres `users` row (id/role) for the Firebase-authenticated caller.
 // Must run after authenticateToken. Routes that touch alert/user data need the numeric
 // id; /api/auth/sync is the only route that's expected to run before this row exists.
-export const resolveUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const resolveUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await pool.query(
-      'SELECT id, role FROM users WHERE auth_id = $1',
-      [req.user?.firebaseUid]
-    );
+    const result = await pool.query('SELECT id, role FROM users WHERE auth_id = $1', [
+      req.user?.firebaseUid,
+    ]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        error: { message: 'No profile found for this account. Call /api/auth/sync first.' }
+        error: { message: 'No profile found for this account. Call /api/auth/sync first.' },
       });
     }
 
@@ -72,7 +63,7 @@ export const requireRole = (...roles: string[]) => {
     if (!req.user?.role || !roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        error: { message: 'You do not have permission to access this resource' }
+        error: { message: 'You do not have permission to access this resource' },
       });
     }
     return next();
