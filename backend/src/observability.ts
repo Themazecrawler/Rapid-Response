@@ -19,6 +19,43 @@ interface Metric {
 
 const httpMetrics = new Map<string, Metric>();
 
+interface CustomMetric {
+  type: 'counter' | 'gauge';
+  help: string;
+  values: Map<string, number>;
+}
+
+const customMetrics = new Map<string, CustomMetric>();
+
+const labelString = (labels: Record<string, string>): string =>
+  Object.entries(labels)
+    .map(([key, value]) => `${key}="${escapeLabel(value)}"`)
+    .join(',');
+
+const customMetric = (name: string, type: CustomMetric['type'], help: string): CustomMetric => {
+  let metric = customMetrics.get(name);
+  if (!metric) {
+    metric = { type, help, values: new Map() };
+    customMetrics.set(name, metric);
+  }
+  return metric;
+};
+
+export const incrementCounter = (
+  name: string,
+  help: string,
+  labels: Record<string, string> = {},
+  by = 1
+): void => {
+  const metric = customMetric(name, 'counter', help);
+  const key = labelString(labels);
+  metric.values.set(key, (metric.values.get(key) ?? 0) + by);
+};
+
+export const setGauge = (name: string, help: string, value: number): void => {
+  customMetric(name, 'gauge', help).values.set('', value);
+};
+
 const metricKey = (method: string, route: string, status: number): string =>
   JSON.stringify([method, route, String(status)]);
 
@@ -70,9 +107,18 @@ export const renderMetrics = (): string => {
     );
   }
 
+  const customLines: string[] = [];
+  for (const [name, metric] of customMetrics) {
+    customLines.push(`# HELP ${name} ${metric.help}`, `# TYPE ${name} ${metric.type}`);
+    for (const [labels, value] of metric.values) {
+      customLines.push(`${name}${labels ? `{${labels}}` : ''} ${value}`);
+    }
+  }
+
   return [
     ...lines,
     ...durationLines,
+    ...customLines,
     `rapid_response_process_uptime_seconds ${process.uptime()}`,
     '',
   ].join('\n');

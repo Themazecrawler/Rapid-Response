@@ -5,6 +5,7 @@ import { authenticateToken, requireRole, resolveUser } from '../middleware/auth'
 import { mapAlertRow } from '../utils/serializers';
 import { body } from 'express-validator';
 import { getPagination, paginationValidators, rejectInvalidRequest } from '../utils/validation';
+import { appCache, cacheTtlMs } from '../services/cache';
 
 const router = express.Router();
 
@@ -149,46 +150,50 @@ const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 // campus-wide picture (alert types/priorities/day-of-week trends), not personal history.
 router.get('/stats', authenticateToken, resolveUser, async (req, res, next) => {
   try {
-    const [byType, byPriority, byStatus, byDayOfWeek] = await Promise.all([
-      pool.query(queries.statsByType),
-      pool.query(queries.statsByPriority),
-      pool.query(queries.statsByStatus),
-      pool.query(queries.statsByDayOfWeek),
-    ]);
+    const data = await appCache.getOrLoad(
+      'alerts:stats',
+      cacheTtlMs('STATS_CACHE_TTL_SECONDS', 30),
+      async () => {
+        const [byType, byPriority, byStatus, byDayOfWeek] = await Promise.all([
+          pool.query(queries.statsByType),
+          pool.query(queries.statsByPriority),
+          pool.query(queries.statsByStatus),
+          pool.query(queries.statsByDayOfWeek),
+        ]);
 
-    const totalAlerts = byStatus.rows.reduce((sum, row) => sum + row.count, 0);
-    const statusCounts: Record<string, number> = {};
-    byStatus.rows.forEach((row) => {
-      statusCounts[row.status] = row.count;
-    });
+        const totalAlerts = byStatus.rows.reduce((sum, row) => sum + row.count, 0);
+        const statusCounts: Record<string, number> = {};
+        byStatus.rows.forEach((row) => {
+          statusCounts[row.status] = row.count;
+        });
 
-    // Postgres DOW is 0 (Sun) .. 6 (Sat); rotate into a Mon..Sun array, defaulting to 0.
-    const dowCounts = new Array(7).fill(0);
-    byDayOfWeek.rows.forEach((row) => {
-      const mondayFirstIndex = (row.dow + 6) % 7;
-      dowCounts[mondayFirstIndex] = row.count;
-    });
-    const byDayOfWeekOut = DAY_LABELS.map((label, i) => ({ label, count: dowCounts[i] }));
+        // Postgres DOW is 0 (Sun) .. 6 (Sat); rotate into a Mon..Sun array, defaulting to 0.
+        const dowCounts = new Array(7).fill(0);
+        byDayOfWeek.rows.forEach((row) => {
+          const mondayFirstIndex = (row.dow + 6) % 7;
+          dowCounts[mondayFirstIndex] = row.count;
+        });
+        const byDayOfWeekOut = DAY_LABELS.map((label, i) => ({ label, count: dowCounts[i] }));
 
-    const busiestDay = byDayOfWeekOut.reduce(
-      (max, entry) => (entry.count > max.count ? entry : max),
-      byDayOfWeekOut[0]
+        const busiestDay = byDayOfWeekOut.reduce(
+          (max, entry) => (entry.count > max.count ? entry : max),
+          byDayOfWeekOut[0]
+        );
+
+        return {
+          totalAlerts,
+          activeAlerts: statusCounts['active'] ?? 0,
+          investigatingAlerts: statusCounts['investigating'] ?? 0,
+          resolvedAlerts: statusCounts['resolved'] ?? 0,
+          byType: byType.rows.map((row) => ({ label: row.type, count: row.count })),
+          byPriority: byPriority.rows.map((row) => ({ label: row.priority, count: row.count })),
+          byDayOfWeek: byDayOfWeekOut,
+          mostCommonType: byType.rows[0]?.type ?? null,
+          busiestDay: totalAlerts > 0 ? busiestDay.label : null,
+        };
+      }
     );
-
-    res.json({
-      success: true,
-      data: {
-        totalAlerts,
-        activeAlerts: statusCounts['active'] ?? 0,
-        investigatingAlerts: statusCounts['investigating'] ?? 0,
-        resolvedAlerts: statusCounts['resolved'] ?? 0,
-        byType: byType.rows.map((row) => ({ label: row.type, count: row.count })),
-        byPriority: byPriority.rows.map((row) => ({ label: row.priority, count: row.count })),
-        byDayOfWeek: byDayOfWeekOut,
-        mostCommonType: byType.rows[0]?.type ?? null,
-        busiestDay: totalAlerts > 0 ? busiestDay.label : null,
-      },
-    });
+    res.json({ success: true, data });
   } catch (error) {
     next(error);
   }
