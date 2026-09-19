@@ -98,6 +98,11 @@ export const queries = {
     RETURNING *
   `,
 
+  getAllContacts: `
+    SELECT * FROM emergency_contacts
+    ORDER BY name ASC
+  `,
+
   getAvailableContacts: `
     SELECT * FROM emergency_contacts
     WHERE available = true

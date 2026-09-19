@@ -33,6 +33,16 @@ abstract class LoadableViewModel<T>(private val initialValue: T) : ViewModel() {
         load()
     }
 
+    fun refresh() {
+        viewModelScope.launch {
+            val result = fetch()
+            if (result.e == null) {
+                _data.value = result.data ?: initialValue
+                _error.value = null
+            }
+        }
+    }
+
     fun load() {
         viewModelScope.launch {
             _loading.value = true

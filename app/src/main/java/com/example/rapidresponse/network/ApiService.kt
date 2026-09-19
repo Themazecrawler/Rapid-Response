@@ -2,6 +2,7 @@ package com.example.rapidresponse.network
 
 import com.example.rapidresponse.model.AlertStats
 import com.example.rapidresponse.model.ApiEnvelope
+import com.example.rapidresponse.model.AvailabilityRequest
 import com.example.rapidresponse.model.DeviceTokenRequest
 import com.example.rapidresponse.model.EmergencyAlert
 import com.example.rapidresponse.model.EmergencyContact
@@ -10,8 +11,10 @@ import com.example.rapidresponse.model.UserProfile
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface ApiService {
 
@@ -36,6 +39,18 @@ interface ApiService {
 
     @GET("api/v1/contacts")
     suspend fun getContacts(): Response<ApiEnvelope<List<EmergencyContact>>>
+
+    @GET("api/v1/contacts/all")
+    suspend fun getAllContacts(): Response<ApiEnvelope<List<EmergencyContact>>>
+
+    @POST("api/v1/contacts")
+    suspend fun createContact(@Body contact: EmergencyContact): Response<ApiEnvelope<EmergencyContact>>
+
+    @PATCH("api/v1/contacts/{id}/availability")
+    suspend fun setContactAvailability(
+        @Path("id") id: Int,
+        @Body request: AvailabilityRequest
+    ): Response<ApiEnvelope<EmergencyContact>>
 
     @GET("api/v1/alerts/stats")
     suspend fun getAlertStats(): Response<ApiEnvelope<AlertStats>>
