@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const pool = new Pool({
+export const connectionConfig = {
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
@@ -25,7 +25,9 @@ export const pool = new Pool({
   query_timeout: 6000,
   lock_timeout: 2000,
   idle_in_transaction_session_timeout: 10000,
-});
+};
+
+export const pool = new Pool(connectionConfig);
 
 pool.on('error', (error) => {
   console.error('Unexpected idle PostgreSQL client error', error);

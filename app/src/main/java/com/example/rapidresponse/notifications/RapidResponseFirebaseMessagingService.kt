@@ -45,6 +45,8 @@ class RapidResponseFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(message)
         if (message.data["type"] != "new_alert") return
 
+        AlertRefreshSignal.notifyNewAlert()
+
         val alertType = message.data["alertType"] ?: "Alert"
         val priority = message.data["priority"]?.replaceFirstChar { it.uppercase() }
         val building = message.data["building"]?.takeIf { it.isNotBlank() }

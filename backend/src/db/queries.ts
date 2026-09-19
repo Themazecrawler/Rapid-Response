@@ -55,6 +55,22 @@ export const queries = {
     SELECT * FROM emergency_alerts WHERE client_alert_id = $1
   `,
 
+  getAlertWithReporterById: `
+    SELECT ea.*, u.display_name as reporter_name
+    FROM emergency_alerts ea
+    JOIN users u ON ea.user_id = u.id
+    WHERE ea.id = $1
+  `,
+
+  getAlertsAfterId: `
+    SELECT ea.*, u.display_name as reporter_name
+    FROM emergency_alerts ea
+    JOIN users u ON ea.user_id = u.id
+    WHERE ea.id > $1
+    ORDER BY ea.id ASC
+    LIMIT $2
+  `,
+
   getRecentAlerts: `
     SELECT ea.*, u.display_name as reporter_name
     FROM emergency_alerts ea
