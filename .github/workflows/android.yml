@@ -23,7 +23,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v6
       - name: Provide placeholder config (real values are gitignored)
         run: |
           cp app/google-services.json.example app/google-services.json
