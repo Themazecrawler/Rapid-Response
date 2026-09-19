@@ -30,12 +30,12 @@ jobs:
           cp local.properties.example local.properties
       - run: chmod +x gradlew
       - run: ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug assembleRelease --stacktrace
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: android-reports
           path: app/build/reports
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: android-builds
           path: app/build/outputs/apk
