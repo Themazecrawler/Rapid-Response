@@ -6,6 +6,7 @@ import androidx.work.Configuration
 import com.example.rapidresponse.notifications.NotificationChannels
 import com.example.rapidresponse.queue.AlertQueueManager
 import com.google.android.libraries.places.api.Places
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,7 @@ class RapidResponseApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY)
         }
