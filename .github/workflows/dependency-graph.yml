@@ -21,3 +21,5 @@ jobs:
           cp app/google-services.json.example app/google-services.json
           cp local.properties.example local.properties
       - uses: gradle/actions/dependency-submission@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        env:
+          DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: '(debug|release)RuntimeClasspath'
