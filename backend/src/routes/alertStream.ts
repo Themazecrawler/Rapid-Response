@@ -136,7 +136,7 @@ router.get(
         for (const alert of await fetchAlertsAfter(lastEventId)) {
           deliver({ type: 'alert', alert });
         }
-      } catch (_error) {
+      } catch {
         write('event: resync\ndata: {}\n\n');
       }
       replaying = false;

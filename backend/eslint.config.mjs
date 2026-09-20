@@ -11,12 +11,22 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 2022,
       globals: { ...globals.node, ...globals.jest },
+      parserOptions: {
+        project: './tsconfig.eslint.json',
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     rules: {
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'off',
-      'no-console': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': ['error', { checksVoidReturn: false }],
+      'no-console': 'error',
     },
+  },
+  {
+    files: ['src/observability.ts', 'scripts/**/*.ts'],
+    rules: { 'no-console': 'off' },
   },
   prettier
 );

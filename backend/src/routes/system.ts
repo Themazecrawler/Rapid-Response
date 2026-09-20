@@ -22,7 +22,7 @@ router.get('/health/ready', async (_req, res) => {
       database: database.rowCount === 1 ? 'up' : 'unknown',
       schemaVersion: migration.rows[0]?.version ?? null,
     });
-  } catch (_error) {
+  } catch {
     return res.status(503).json({ success: false, status: 'not_ready' });
   }
 });

@@ -22,7 +22,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
       email: decoded.email ?? null,
     };
     return next();
-  } catch (error) {
+  } catch {
     return res.status(401).json({
       success: false,
       error: { message: 'Invalid or expired token' },
