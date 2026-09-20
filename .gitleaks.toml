@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Example files and test fixtures hold placeholder values only"
+paths = [
+  '''(^|/)__tests__/''',
+  '''\.example$''',
+]
