@@ -1,5 +1,5 @@
 import express from 'express';
-import { query } from 'express-validator';
+import { matchedData, query } from 'express-validator';
 import { pool } from '../db';
 import { queries } from '../db/queries';
 import { authenticateToken, requireRole, resolveUser } from '../middleware/auth';
@@ -155,9 +155,8 @@ router.get(
   query('timeout').optional().isInt({ min: 1, max: MAX_POLL_SECONDS }).toInt(),
   rejectInvalidRequest,
   async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const after = req.query.after as unknown as number;
-    const timeoutSeconds =
-      typeof req.query.timeout === 'number' ? req.query.timeout : MAX_POLL_SECONDS;
+    const { after, timeout } = matchedData(req, { locations: ['query'] });
+    const timeoutSeconds = typeof timeout === 'number' ? timeout : MAX_POLL_SECONDS;
 
     if (!acquireConnection()) {
       res.setHeader('Retry-After', '5');

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { query, validationResult } from 'express-validator';
+import { matchedData, query, validationResult } from 'express-validator';
 
 export const paginationValidators = [
   query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
@@ -17,7 +17,10 @@ export const rejectInvalidRequest = (req: Request, res: Response, next: NextFunc
   return next();
 };
 
-export const getPagination = (req: Request): { limit: number; offset: number } => ({
-  limit: typeof req.query.limit === 'number' ? req.query.limit : 50,
-  offset: typeof req.query.offset === 'number' ? req.query.offset : 0,
-});
+export const getPagination = (req: Request): { limit: number; offset: number } => {
+  const { limit, offset } = matchedData(req, { locations: ['query'] });
+  return {
+    limit: typeof limit === 'number' ? limit : 50,
+    offset: typeof offset === 'number' ? offset : 0,
+  };
+};
