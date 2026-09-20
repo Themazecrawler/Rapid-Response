@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+import { createIpRateLimiter } from './middleware/rateLimits';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth';
 import alertRoutes from './routes/alerts';
@@ -13,6 +13,11 @@ import systemRoutes from './routes/system';
 import { requestTelemetry } from './observability';
 
 const app = express();
+
+const trustProxy = process.env.TRUST_PROXY;
+if (trustProxy) {
+  app.set('trust proxy', /^\d+$/.test(trustProxy) ? Number(trustProxy) : trustProxy);
+}
 
 const allowedOrigins = new Set(
   (process.env.CORS_ALLOWED_ORIGINS ?? '')
@@ -35,11 +40,7 @@ app.use((_req, res, next) => {
 });
 app.use(systemRoutes);
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-});
-app.use(limiter);
+app.use(createIpRateLimiter());
 
 const mountApi = (prefix: string) => {
   app.use(`${prefix}/auth`, authRoutes);

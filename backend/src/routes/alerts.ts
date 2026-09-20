@@ -5,9 +5,11 @@ import { body } from 'express-validator';
 import { getPagination, paginationValidators, rejectInvalidRequest } from '../utils/validation';
 import { appCache, cacheTtlMs } from '../services/cache';
 import { loadAlertStatistics } from '../services/alertStatistics';
+import { createAlertSubmissionLimiter } from '../middleware/rateLimits';
 import { alertRepository } from '../repositories/alertRepository';
 
 const router = express.Router();
+const alertSubmissionLimiter = createAlertSubmissionLimiter();
 
 const sameNullableValue = (stored: unknown, submitted: unknown): boolean =>
   (stored ?? null) === (submitted ?? null);
@@ -62,6 +64,7 @@ const validateAlert = [
 router.post(
   '/',
   authenticateToken,
+  alertSubmissionLimiter,
   ...validateAlert,
   rejectInvalidRequest,
   resolveUser,
