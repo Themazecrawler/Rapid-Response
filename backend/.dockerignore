@@ -3,4 +3,5 @@ dist
 dist-scripts
 coverage
 .env
+.env.*
 npm-debug.log

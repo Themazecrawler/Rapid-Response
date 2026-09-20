@@ -14,7 +14,7 @@ describe('twilio config', () => {
     process.env = { ...original };
   });
 
-  it('leaves SMS disabled instead of crashing on the placeholder values from env.example', async () => {
+  it('leaves SMS disabled instead of crashing on the placeholder values from .env.example', async () => {
     process.env.TWILIO_ACCOUNT_SID = 'your-twilio-account-sid';
     process.env.TWILIO_AUTH_TOKEN = 'your-twilio-auth-token';
 
