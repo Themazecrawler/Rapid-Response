@@ -142,3 +142,52 @@ describe('contacts routes', () => {
     });
   });
 });
+
+describe('GET /api/contacts (cached list)', () => {
+  beforeEach(() => {
+    verifyIdToken.mockReset();
+    poolQuery.mockReset();
+  });
+
+  it('serves available contacts and reuses the cached list until a write invalidates it', async () => {
+    const listCalls = () =>
+      poolQuery.mock.calls.filter(([sql]) => sql === queries.getAvailableContacts).length;
+    asRole('security', (sql) => {
+      if (sql === queries.getAvailableContacts) return { rows: [contact] };
+      if (sql.includes('UPDATE emergency_contacts'))
+        return { rows: [{ ...contact, available: false }] };
+      return undefined;
+    });
+    const get = () => request(app).get('/api/contacts').set('Authorization', 'Bearer t');
+
+    const first = await get();
+    await get();
+    expect(first.body.data).toHaveLength(1);
+    expect(listCalls()).toBe(1);
+
+    await request(app)
+      .patch('/api/contacts/3/availability')
+      .set('Authorization', 'Bearer t')
+      .send({ available: false });
+    await get();
+
+    expect(listCalls()).toBe(2);
+  });
+
+  it('reports database failures', async () => {
+    asRole('student', (sql) => {
+      if (sql === queries.getAvailableContacts) throw new Error('db down');
+      return undefined;
+    });
+    poolQuery.mockImplementation((sql: string) => {
+      if (sql === queries.getAvailableContacts) return Promise.reject(new Error('db down'));
+      return Promise.resolve({ rows: [] });
+    });
+    process.env.ENABLE_CACHE = 'false';
+
+    const res = await request(app).get('/api/contacts').set('Authorization', 'Bearer t');
+
+    delete process.env.ENABLE_CACHE;
+    expect(res.status).toBe(500);
+  });
+});

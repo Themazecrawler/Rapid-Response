@@ -1,7 +1,6 @@
 import express from 'express';
 import { matchedData, query } from 'express-validator';
-import { pool } from '../db';
-import { queries } from '../db/queries';
+import { alertRepository } from '../repositories/alertRepository';
 import { authenticateToken, requireRole, resolveUser } from '../middleware/auth';
 import { setGauge } from '../observability';
 import { realtimeEnabled, subscribeToRealtime, RealtimeMessage } from '../services/realtime';
@@ -61,7 +60,7 @@ const rejectWhenUnavailable = (
 };
 
 const fetchAlertsAfter = async (afterId: number) => {
-  const { rows } = await pool.query(queries.getAlertsAfterId, [afterId, REPLAY_LIMIT]);
+  const rows = await alertRepository.listAfterId(afterId, REPLAY_LIMIT);
   return rows.map(mapAlertRow);
 };
 

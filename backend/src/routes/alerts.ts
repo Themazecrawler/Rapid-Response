@@ -1,11 +1,11 @@
 import express from 'express';
-import { pool } from '../db';
-import { queries } from '../db/queries';
 import { authenticateToken, requireRole, resolveUser } from '../middleware/auth';
 import { mapAlertRow } from '../utils/serializers';
 import { body } from 'express-validator';
 import { getPagination, paginationValidators, rejectInvalidRequest } from '../utils/validation';
 import { appCache, cacheTtlMs } from '../services/cache';
+import { loadAlertStatistics } from '../services/alertStatistics';
+import { alertRepository } from '../repositories/alertRepository';
 
 const router = express.Router();
 
@@ -79,27 +79,23 @@ router.post(
         clientAlertId,
       } = req.body;
 
-      const insertResult = await pool.query(queries.createAlert, [
-        req.user!.id,
+      let alert = await alertRepository.create({
+        userId: req.user!.id!,
         type,
         description,
-        latitude,
-        longitude,
-        building,
-        floor,
-        'active',
+        latitude: latitude ?? null,
+        longitude: longitude ?? null,
+        building: building ?? null,
+        floor: floor ?? null,
         priority,
-        reporterPhone ?? null,
+        reporterPhone: reporterPhone ?? null,
         clientAlertId,
-      ]);
-
-      let alert = insertResult.rows[0];
+      });
       const isNewAlert = Boolean(alert);
 
       if (!alert) {
         // Conflict on client_alert_id: this alert already exists from an earlier attempt.
-        const existing = await pool.query(queries.getAlertByClientId, [clientAlertId]);
-        alert = existing.rows[0];
+        alert = await alertRepository.findByClientAlertId(clientAlertId);
 
         if (!alert || !isExactAlertReplay(alert, req.user!.id!, req.body)) {
           return res.status(409).json({
@@ -131,11 +127,11 @@ router.get(
   async (req, res, next) => {
     try {
       const { limit, offset } = getPagination(req);
-      const result = await pool.query(queries.getRecentAlerts, [limit + 1, offset]);
-      const hasMore = result.rows.length > limit;
+      const rows = await alertRepository.listRecent(limit + 1, offset);
+      const hasMore = rows.length > limit;
       res.json({
         success: true,
-        data: result.rows.slice(0, limit).map(mapAlertRow),
+        data: rows.slice(0, limit).map(mapAlertRow),
         pagination: { limit, offset, hasMore },
       });
     } catch (error) {
@@ -144,8 +140,6 @@ router.get(
   }
 );
 
-const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
 // Aggregate alert statistics for the charts screen. Not scoped to the caller: this is a
 // campus-wide picture (alert types/priorities/day-of-week trends), not personal history.
 router.get('/stats', authenticateToken, resolveUser, async (req, res, next) => {
@@ -153,45 +147,7 @@ router.get('/stats', authenticateToken, resolveUser, async (req, res, next) => {
     const data = await appCache.getOrLoad(
       'alerts:stats',
       cacheTtlMs('STATS_CACHE_TTL_SECONDS', 30),
-      async () => {
-        const [byType, byPriority, byStatus, byDayOfWeek] = await Promise.all([
-          pool.query(queries.statsByType),
-          pool.query(queries.statsByPriority),
-          pool.query(queries.statsByStatus),
-          pool.query(queries.statsByDayOfWeek),
-        ]);
-
-        const totalAlerts = byStatus.rows.reduce((sum, row) => sum + row.count, 0);
-        const statusCounts: Record<string, number> = {};
-        byStatus.rows.forEach((row) => {
-          statusCounts[row.status] = row.count;
-        });
-
-        // Postgres DOW is 0 (Sun) .. 6 (Sat); rotate into a Mon..Sun array, defaulting to 0.
-        const dowCounts = new Array(7).fill(0);
-        byDayOfWeek.rows.forEach((row) => {
-          const mondayFirstIndex = (row.dow + 6) % 7;
-          dowCounts[mondayFirstIndex] = row.count;
-        });
-        const byDayOfWeekOut = DAY_LABELS.map((label, i) => ({ label, count: dowCounts[i] }));
-
-        const busiestDay = byDayOfWeekOut.reduce(
-          (max, entry) => (entry.count > max.count ? entry : max),
-          byDayOfWeekOut[0]
-        );
-
-        return {
-          totalAlerts,
-          activeAlerts: statusCounts['active'] ?? 0,
-          investigatingAlerts: statusCounts['investigating'] ?? 0,
-          resolvedAlerts: statusCounts['resolved'] ?? 0,
-          byType: byType.rows.map((row) => ({ label: row.type, count: row.count })),
-          byPriority: byPriority.rows.map((row) => ({ label: row.priority, count: row.count })),
-          byDayOfWeek: byDayOfWeekOut,
-          mostCommonType: byType.rows[0]?.type ?? null,
-          busiestDay: totalAlerts > 0 ? busiestDay.label : null,
-        };
-      }
+      loadAlertStatistics
     );
     res.json({ success: true, data });
   } catch (error) {

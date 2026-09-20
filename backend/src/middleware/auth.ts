@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { firebaseAuth } from '../config/firebaseAdmin';
-import { pool } from '../db';
+import { userRepository } from '../repositories/userRepository';
 
 export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
@@ -33,11 +33,9 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
 // id; /api/auth/sync is the only route that's expected to run before this row exists.
 export const resolveUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await pool.query('SELECT id, role FROM users WHERE auth_id = $1', [
-      req.user?.firebaseUid,
-    ]);
+    const profile = await userRepository.findAuthProfile(req.user?.firebaseUid);
 
-    if (result.rows.length === 0) {
+    if (!profile) {
       return res.status(404).json({
         success: false,
         error: { message: 'No profile found for this account. Call /api/auth/sync first.' },
@@ -46,8 +44,8 @@ export const resolveUser = async (req: Request, res: Response, next: NextFunctio
 
     req.user = {
       ...req.user!,
-      id: result.rows[0].id,
-      role: result.rows[0].role,
+      id: profile.id,
+      role: profile.role,
     };
     return next();
   } catch (error) {

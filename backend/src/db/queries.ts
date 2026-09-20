@@ -14,6 +14,14 @@ export const queries = {
     SELECT * FROM users WHERE id = $1
   `,
 
+  getUserAuthProfile: `
+    SELECT id, role FROM users WHERE auth_id = $1
+  `,
+
+  updateUserProfile: `
+    UPDATE users SET display_name = $1, campus = $2 WHERE id = $3 RETURNING *
+  `,
+
   // Device token queries (push notifications)
   upsertDeviceToken: `
     INSERT INTO device_tokens (user_id, fcm_token)
@@ -53,6 +61,13 @@ export const queries = {
 
   getAlertByClientId: `
     SELECT * FROM emergency_alerts WHERE client_alert_id = $1
+  `,
+
+  getAlertsByUser: `
+    SELECT * FROM emergency_alerts
+    WHERE user_id = $1
+    ORDER BY created_at DESC, id DESC
+    LIMIT $2 OFFSET $3
   `,
 
   getAlertWithReporterById: `
@@ -117,6 +132,10 @@ export const queries = {
   getAllContacts: `
     SELECT * FROM emergency_contacts
     ORDER BY name ASC
+  `,
+
+  updateContactAvailability: `
+    UPDATE emergency_contacts SET available = $1 WHERE id = $2 RETURNING *
   `,
 
   getAvailableContacts: `

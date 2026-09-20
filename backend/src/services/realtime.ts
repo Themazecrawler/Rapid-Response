@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { Client } from 'pg';
-import { connectionConfig, pool } from '../db';
-import { queries } from '../db/queries';
+import { connectionConfig } from '../db';
+import { alertRepository } from '../repositories/alertRepository';
 import { incrementCounter, log } from '../observability';
 import { mapAlertRow } from '../utils/serializers';
 import { appCache } from './cache';
@@ -25,9 +25,9 @@ export const subscribeToRealtime = (listener: (message: RealtimeMessage) => void
 };
 
 const publishAlertById = async (id: number): Promise<void> => {
-  const { rows } = await pool.query(queries.getAlertWithReporterById, [id]);
-  if (rows.length === 0) return;
-  publishRealtimeMessage({ type: 'alert', alert: mapAlertRow(rows[0]) });
+  const alert = await alertRepository.findWithReporterById(id);
+  if (!alert) return;
+  publishRealtimeMessage({ type: 'alert', alert: mapAlertRow(alert) });
   incrementCounter('rapid_response_realtime_events_total', 'Alert events fanned out.');
 };
 
