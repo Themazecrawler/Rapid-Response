@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { firebaseAuth } from '../config/firebaseAdmin';
 import { userRepository } from '../repositories/userRepository';
 
+const PRIVILEGED_ROLES = ['security', 'admin'];
+
 export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -42,10 +44,31 @@ export const resolveUser = async (req: Request, res: Response, next: NextFunctio
       });
     }
 
+    const role = profile.role;
+    const token = req.headers?.authorization?.split(' ')[1];
+    if (
+      token &&
+      PRIVILEGED_ROLES.includes(role) &&
+      process.env.FIREBASE_CHECK_REVOKED !== 'false'
+    ) {
+      try {
+        await firebaseAuth.verifyIdToken(token, true);
+      } catch (error) {
+        const code = (error as { code?: string }).code;
+        if (code === 'auth/id-token-revoked' || code === 'auth/user-disabled') {
+          return res.status(401).json({
+            success: false,
+            error: { message: 'Invalid or expired token' },
+          });
+        }
+        return next(error);
+      }
+    }
+
     req.user = {
       ...req.user!,
       id: profile.id,
-      role: profile.role,
+      role,
     };
     return next();
   } catch (error) {

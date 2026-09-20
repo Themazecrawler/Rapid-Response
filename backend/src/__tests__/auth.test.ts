@@ -127,3 +127,81 @@ describe('requireRole', () => {
     expect(next).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('resolveUser revocation check for privileged accounts', () => {
+  beforeEach(() => {
+    poolQuery.mockReset();
+    verifyIdToken.mockReset();
+  });
+
+  const staffRequest = (role: string) => {
+    poolQuery.mockResolvedValue({ rows: [{ id: 7, role }] });
+    return {
+      headers: { authorization: 'Bearer token' },
+      user: { firebaseUid: 'uid', email: null },
+    } as unknown as Request;
+  };
+
+  it('re-verifies staff tokens with revocation checking', async () => {
+    verifyIdToken.mockResolvedValue({});
+    const next = jest.fn();
+
+    await resolveUser(staffRequest('security'), mockRes(), next);
+
+    expect(verifyIdToken).toHaveBeenCalledWith('token', true);
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a staff member whose token was revoked', async () => {
+    verifyIdToken.mockRejectedValue(
+      Object.assign(new Error('revoked'), { code: 'auth/id-token-revoked' })
+    );
+    const res = mockRes();
+    const next = jest.fn();
+
+    await resolveUser(staffRequest('admin'), res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('rejects a disabled staff account', async () => {
+    verifyIdToken.mockRejectedValue(
+      Object.assign(new Error('disabled'), { code: 'auth/user-disabled' })
+    );
+    const res = mockRes();
+
+    await resolveUser(staffRequest('security'), res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(401);
+  });
+
+  it('surfaces unexpected verification errors instead of pretending the token is bad', async () => {
+    const outage = Object.assign(new Error('network'), { code: 'auth/network-error' });
+    verifyIdToken.mockRejectedValue(outage);
+    const next = jest.fn();
+
+    await resolveUser(staffRequest('security'), mockRes(), next);
+
+    expect(next).toHaveBeenCalledWith(outage);
+  });
+
+  it('does not add a second Firebase call for students', async () => {
+    const next = jest.fn();
+
+    await resolveUser(staffRequest('student'), mockRes(), next);
+
+    expect(verifyIdToken).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  it('can be switched off for emergencies with FIREBASE_CHECK_REVOKED=false', async () => {
+    process.env.FIREBASE_CHECK_REVOKED = 'false';
+    const next = jest.fn();
+
+    await resolveUser(staffRequest('security'), mockRes(), next);
+
+    delete process.env.FIREBASE_CHECK_REVOKED;
+    expect(verifyIdToken).not.toHaveBeenCalled();
+  });
+});
