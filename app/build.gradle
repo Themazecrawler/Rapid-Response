@@ -3,15 +3,16 @@ import java.util.Properties
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' version '2.0.1'
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
     id 'com.google.gms.google-services'
-    id 'org.jlleitschuh.gradle.ktlint' version '11.6.1'
+    id 'org.jlleitschuh.gradle.ktlint' version '12.1.2'
 }
 
 ktlint {
-    disabledRules.set(["no-wildcard-imports"])
+    version.set("0.50.0")
 }
 
 def localProperties = new Properties()
@@ -22,7 +23,7 @@ if (localPropertiesFile.exists()) {
 
 android {
     namespace 'com.example.rapidresponse'
-    compileSdk 33
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.example.rapidresponse"
@@ -51,20 +52,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
     buildFeatures {
         compose true
         buildConfig true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.4.1'
-    }
-    packagingOptions {
+    packaging {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
@@ -78,77 +76,79 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
-    implementation 'androidx.activity:activity-compose:1.7.0'
-    implementation "androidx.compose.ui:ui:1.4.0"
-    implementation "androidx.compose.ui:ui-tooling-preview:1.4.0"
-    implementation 'androidx.compose.material:material:1.3.1'
-    implementation 'androidx.compose.material:material-icons-extended:1.3.1'
-    debugImplementation "androidx.compose.ui:ui-tooling:1.4.0"
-    debugImplementation "androidx.compose.ui:ui-test-manifest:1.4.0"
+    implementation 'androidx.core:core-ktx:1.15.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
+    implementation 'androidx.activity:activity-compose:1.10.1'
+    implementation platform('androidx.compose:compose-bom:2025.02.00')
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.material:material'
+    implementation 'androidx.compose.material:material-icons-extended'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'io.mockk:mockk:1.13.9'
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
-    testImplementation 'app.cash.turbine:turbine:1.0.0'
-    testImplementation 'org.robolectric:robolectric:4.11.1'
+    testImplementation 'io.mockk:mockk:1.13.17'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0'
+    testImplementation 'app.cash.turbine:turbine:1.2.0'
+    testImplementation 'org.robolectric:robolectric:4.14.1'
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
-    testImplementation 'androidx.test:core:1.5.0'
-    testImplementation 'androidx.work:work-testing:2.8.1'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:1.4.0"
+    testImplementation 'androidx.test:core:1.6.1'
+    testImplementation 'androidx.work:work-testing:2.10.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation platform('androidx.compose:compose-bom:2025.02.00')
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
 
     // Navigation
-    implementation "androidx.navigation:navigation-compose:2.5.3"
+    implementation "androidx.navigation:navigation-compose:2.8.9"
 
     // Material3
-    implementation "androidx.compose.material3:material3:1.0.1"
+    implementation "androidx.compose.material3:material3"
 
     // Maps + Location (for the "My Location" screen)
-    implementation 'com.google.android.gms:play-services-maps:18.1.0'
-    implementation 'com.google.maps.android:maps-compose:2.11.0'
-    implementation 'com.google.android.gms:play-services-location:21.0.1'
-    implementation "com.google.accompanist:accompanist-permissions:0.28.0"
+    implementation 'com.google.android.gms:play-services-maps:19.0.0'
+    implementation 'com.google.maps.android:maps-compose:6.4.1'
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
+    implementation "com.google.accompanist:accompanist-permissions:0.36.0"
 
     // Places SDK, for finding nearby police/security stations from the Location screen
-    implementation 'com.google.android.libraries.places:places:3.0.0'
+    implementation 'com.google.android.libraries.places:places:3.5.0'
 
     // Dagger - Hilt
-    implementation 'com.google.dagger:hilt-android:2.44.2'
-    kapt 'com.google.dagger:hilt-compiler:2.44.2'
-    implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
+    implementation 'com.google.dagger:hilt-android:2.56.2'
+    kapt 'com.google.dagger:hilt-compiler:2.56.2'
+    implementation "androidx.hilt:hilt-navigation-compose:1.2.0"
 
     // Room (local durable queue for offline-resilient alert submission)
-    implementation "androidx.room:room-runtime:2.5.2"
-    implementation "androidx.room:room-ktx:2.5.2"
-    kapt "androidx.room:room-compiler:2.5.2"
+    implementation "androidx.room:room-runtime:2.7.2"
+    implementation "androidx.room:room-ktx:2.7.2"
+    kapt "androidx.room:room-compiler:2.7.2"
 
     // WorkManager (background delivery retry with backoff), + Hilt integration for injecting
     // the repository/DAO into the worker
-    implementation "androidx.work:work-runtime-ktx:2.8.1"
-    implementation "androidx.hilt:hilt-work:1.0.0"
-    kapt "androidx.hilt:hilt-compiler:1.0.0"
+    implementation "androidx.work:work-runtime-ktx:2.10.0"
+    implementation "androidx.hilt:hilt-work:1.2.0"
+    kapt "androidx.hilt:hilt-compiler:1.2.0"
 
     // Retrofit / networking for the Rapid Response backend API
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
     implementation "com.squareup.okhttp3:okhttp:4.12.0"
     implementation "com.squareup.okhttp3:logging-interceptor:4.12.0"
     implementation "com.squareup.okhttp3:okhttp-sse:4.12.0"
 
     // Firebase Auth (identity provider)
-    implementation platform('com.google.firebase:firebase-bom:31.3.0')
+    implementation platform('com.google.firebase:firebase-bom:33.9.0')
     implementation 'com.google.firebase:firebase-auth-ktx'
-    implementation 'com.google.android.gms:play-services-auth:20.4.1'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4'
+    implementation 'com.google.android.gms:play-services-auth:21.3.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0'
 
     // Firebase Cloud Messaging (push notifications for security/admin on new alerts)
     implementation 'com.google.firebase:firebase-messaging-ktx'
 
     // Charts (Statistics screen)
-    implementation "com.patrykandpatrick.vico:compose-m3:1.6.4"
+    implementation "com.patrykandpatrick.vico:compose-m3:1.16.1"
 }
 
 kapt {
