@@ -1,3 +1,9 @@
-# Add project specific ProGuard rules here.
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+-keepattributes Signature,InnerClasses,EnclosingMethod,RuntimeVisibleAnnotations,AnnotationDefault
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+
+-keep class com.example.rapidresponse.model.** { *; }
+
+-keep class com.example.rapidresponse.queue.AlertSyncWorker { *; }
+
+-keep public class * extends java.lang.Exception

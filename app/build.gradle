@@ -21,6 +21,8 @@ if (localPropertiesFile.exists()) {
     localProperties.load(new FileInputStream(localPropertiesFile))
 }
 
+def releaseKeystore = System.getenv('ANDROID_KEYSTORE_FILE')
+
 android {
     namespace 'com.example.rapidresponse'
     compileSdk 35
@@ -41,14 +43,29 @@ android {
         manifestPlaceholders = [usesCleartextTraffic: "false"]
     }
 
+    signingConfigs {
+        if (releaseKeystore) {
+            release {
+                storeFile file(releaseKeystore)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+
     buildTypes {
         debug {
             manifestPlaceholders.usesCleartextTraffic = "true"
         }
         release {
             manifestPlaceholders.usesCleartextTraffic = "false"
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (releaseKeystore) {
+                signingConfig signingConfigs.release
+            }
         }
     }
     compileOptions {
