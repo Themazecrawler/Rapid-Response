@@ -1,6 +1,7 @@
 import app from './app';
 import { pool } from './db';
 import { log } from './observability';
+import { registerProcessHandlers } from './lifecycle';
 import { startOutboxWorker } from './services/outbox';
 import { realtimeEnabled, startAlertListener } from './services/realtime';
 import { validateEnvironment } from './config/environment';
@@ -14,17 +15,20 @@ const server = app.listen(PORT, () => {
 const stopOutboxWorker = startOutboxWorker();
 const stopAlertListener = realtimeEnabled() ? startAlertListener() : () => undefined;
 
-const shutdown = (signal: string) => {
-  log('info', 'server_shutdown_started', { signal });
+let shuttingDown = false;
+
+const shutdown = (reason: string, exitCode: number) => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  log('info', 'server_shutdown_started', { reason });
   stopOutboxWorker();
   stopAlertListener();
+  setTimeout(() => process.exit(1), 10_000).unref();
   server.close(async () => {
     await pool.end();
     log('info', 'server_shutdown_complete');
-    process.exit(0);
+    process.exit(exitCode);
   });
-  setTimeout(() => process.exit(1), 10_000).unref();
 };
 
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
+registerProcessHandlers(shutdown);

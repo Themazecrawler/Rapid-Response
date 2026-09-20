@@ -1,4 +1,5 @@
 import { twilioClient } from '../config/twilio';
+import { log } from '../observability';
 
 // Sent server-side, not from the Android app, so the Twilio account SID/auth token never
 // ship inside the APK.
@@ -7,15 +8,13 @@ export const sendAlertConfirmationSms = async (
   alertType: string
 ): Promise<void> => {
   if (!twilioClient) {
-    console.warn(
-      'Twilio is not configured (TWILIO_ACCOUNT_SID/TWILIO_AUTH_TOKEN missing); skipping SMS.'
-    );
+    log('warn', 'sms_skipped', { reason: 'twilio_not_configured' });
     return;
   }
 
   const from = process.env.TWILIO_PHONE_NUMBER;
   if (!from) {
-    console.warn('TWILIO_PHONE_NUMBER is not set; skipping SMS.');
+    log('warn', 'sms_skipped', { reason: 'twilio_phone_number_missing' });
     return;
   }
 

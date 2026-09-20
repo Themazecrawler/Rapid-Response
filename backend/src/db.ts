@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import { log } from './observability';
 
 dotenv.config();
 
@@ -30,7 +31,7 @@ export const connectionConfig = {
 export const pool = new Pool(connectionConfig);
 
 pool.on('error', (error) => {
-  console.error('Unexpected idle PostgreSQL client error', error);
+  log('error', 'postgres_idle_client_error', { error: error.message });
 });
 
 export default pool;
