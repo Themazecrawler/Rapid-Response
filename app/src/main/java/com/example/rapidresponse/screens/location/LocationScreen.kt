@@ -40,8 +40,8 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.libraries.places.api.Places
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -101,10 +101,10 @@ fun LocationScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth().height(280.dp),
                     cameraPositionState = cameraPositionState
                 ) {
-                    Marker(state = MarkerState(position = location!!), title = "You are here")
+                    Marker(state = rememberMarkerState(position = location!!), title = "You are here")
                     stations.forEach { station ->
                         Marker(
-                            state = MarkerState(position = station.location),
+                            state = rememberMarkerState(key = station.name + station.address, position = station.location),
                             title = station.name,
                             snippet = station.address
                         )
