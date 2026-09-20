@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: rapid_response
+      POSTGRES_PASSWORD: rapid_response
+      POSTGRES_DB: rapid_response_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U rapid_response -d rapid_response_db']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      NODE_ENV: development
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: rapid_response
+      DB_PASSWORD: rapid_response
+      DB_NAME: rapid_response_db
+    ports:
+      - '5000:5000'
+    command: sh -c "node dist-scripts/scripts/migrate.js && node dist/server.js"
+
+volumes:
+  postgres-data:

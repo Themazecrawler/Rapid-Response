@@ -10,8 +10,8 @@ security and admin staff are notified immediately.
 
 ## Running it
 
-Backend: `cd backend && npm install`, copy `env.example` to `.env` and fill it in, run the
-migrations in `backend/migrations`, then `npm run dev`.
+Backend: `cd backend && npm install` (Node 22), copy `.env.example` to `.env` and fill it in, start
+Postgres with `docker compose up -d db`, run `npm run db:migrate`, then `npm run dev`.
 
 Android: copy `local.properties.example` to `local.properties` and
 `app/google-services.json.example` to `app/google-services.json`, fill them in, then open the
