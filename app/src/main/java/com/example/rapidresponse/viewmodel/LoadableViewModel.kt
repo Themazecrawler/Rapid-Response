@@ -3,19 +3,13 @@ package com.example.rapidresponse.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rapidresponse.model.DataOrException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-// The "fetch one thing from the repository and expose data/loading/error" shape was
-// hand-written identically in every read-only screen's ViewModel. Subclasses only need to
-// say what to fetch (fetch()) and what to show before the first result arrives (initialValue).
-//
-// init { load() } below runs during construction, but load() only *schedules* the fetch on
-// viewModelScope - by the time that coroutine actually runs fetch(), the subclass's own
-// constructor (and any properties it declares, like an injected repository) has already
-// finished, so overriding fetch() to reference them is safe despite the call originating in
-// the base class's init block.
+// viewModelScope is Main.immediate, so the load must be posted with Dispatchers.Main or it would
+// run fetch() inside this init, before the subclass's own properties are assigned.
 abstract class LoadableViewModel<T>(private val initialValue: T) : ViewModel() {
 
     private val _data = MutableStateFlow(initialValue)
@@ -34,7 +28,7 @@ abstract class LoadableViewModel<T>(private val initialValue: T) : ViewModel() {
     }
 
     fun refresh() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Main) {
             val result = fetch()
             if (result.e == null) {
                 _data.value = result.data ?: initialValue
@@ -44,7 +38,7 @@ abstract class LoadableViewModel<T>(private val initialValue: T) : ViewModel() {
     }
 
     fun load() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Main) {
             _loading.value = true
             val result = fetch()
             _data.value = result.data ?: initialValue
