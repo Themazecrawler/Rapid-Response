@@ -23,3 +23,5 @@ project in Android Studio or run `./gradlew assembleDebug`.
 cd backend && npm test
 ./gradlew testDebugUnitTest
 ```
+
+More detail on design and operations is in [`docs/`](docs). Security reporting is in [`SECURITY.md`](SECURITY.md).
