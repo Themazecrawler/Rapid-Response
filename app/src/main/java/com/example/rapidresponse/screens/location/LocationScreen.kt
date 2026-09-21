@@ -4,30 +4,48 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.LocalPolice
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.rapidresponse.model.NearbyStation
+import com.example.rapidresponse.navigation.Screen
+import com.example.rapidresponse.ui.components.BottomDestination
+import com.example.rapidresponse.ui.components.BottomNavBar
+import com.example.rapidresponse.ui.components.EmptyState
+import com.example.rapidresponse.ui.components.ListRow
 import com.example.rapidresponse.ui.components.ScreenHeader
-import com.example.rapidresponse.ui.theme.Red
+import com.example.rapidresponse.ui.components.SectionLabel
 import com.example.rapidresponse.utils.findNearbyPoliceStations
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -81,71 +99,82 @@ fun LocationScreen(navController: NavController) {
         loadingStations = false
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-        ScreenHeader(title = "My Location", onBack = { navController.popBackStack() })
-
-        when {
-            !permissionState.status.isGranted -> Text(
-                "Location permission is required to show and share your current position."
+    Scaffold(
+        bottomBar = {
+            BottomNavBar(
+                current = BottomDestination.Location,
+                onNavigate = { navController.navigate(it) },
+                onSos = { navController.navigate(Screen.AlertScreen.route) }
             )
-            location == null -> Box(Modifier.fillMaxWidth().height(300.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Red)
-            }
-            else -> Column(
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            ) {
-                val cameraPositionState = rememberCameraPositionState {
-                    position = CameraPosition.fromLatLngZoom(location!!, 15f)
+        }
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(20.dp)) {
+            ScreenHeader(title = "My Location", onBack = { navController.popBackStack() })
+
+            when {
+                !permissionState.status.isGranted -> Text(
+                    "Location permission is required to show and share your current position."
+                )
+                location == null -> Box(Modifier.fillMaxWidth().height(300.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
-                GoogleMap(
-                    modifier = Modifier.fillMaxWidth().height(280.dp),
-                    cameraPositionState = cameraPositionState
+                else -> Column(
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
                 ) {
-                    Marker(state = rememberMarkerState(position = location!!), title = "You are here")
-                    stations.forEach { station ->
-                        Marker(
-                            state = rememberMarkerState(key = station.name + station.address, position = station.location),
-                            title = station.name,
-                            snippet = station.address
-                        )
+                    val cameraPositionState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(location!!, 15f)
                     }
-                }
-
-                Spacer(Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        val geoUri = "https://maps.google.com/maps?q=${location!!.latitude},${location!!.longitude}"
-                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, "This is my current location: $geoUri")
+                    GoogleMap(
+                        modifier = Modifier.fillMaxWidth().height(280.dp),
+                        cameraPositionState = cameraPositionState
+                    ) {
+                        Marker(state = rememberMarkerState(position = location!!), title = "You are here")
+                        stations.forEach { station ->
+                            Marker(
+                                state = rememberMarkerState(
+                                    key = station.name + station.address,
+                                    position = station.location
+                                ),
+                                title = station.name,
+                                snippet = station.address
+                            )
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share location"))
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Red),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Filled.Share, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Share my location")
-                }
-
-                Spacer(Modifier.height(24.dp))
-
-                Text("Nearby Police Stations", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(10.dp))
-
-                when {
-                    loadingStations -> Box(Modifier.fillMaxWidth().padding(vertical = 20.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Red)
                     }
-                    stations.isEmpty() -> Text(
-                        "No nearby police stations found.",
-                        fontSize = 13.sp,
-                        color = Color.Gray
-                    )
-                    else -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        stations.forEach { station -> StationRow(station) }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            val geoUri = "https://maps.google.com/maps?q=${location!!.latitude},${location!!.longitude}"
+                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, "This is my current location: $geoUri")
+                            }
+                            context.startActivity(Intent.createChooser(shareIntent, "Share location"))
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Filled.Share, contentDescription = null)
+                        Text("Share my location", modifier = Modifier.padding(start = 8.dp))
+                    }
+
+                    Spacer(Modifier.height(24.dp))
+
+                    SectionLabel("Nearby police stations")
+                    Spacer(Modifier.height(10.dp))
+
+                    when {
+                        loadingStations -> Box(
+                            Modifier.fillMaxWidth().padding(vertical = 20.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        }
+                        stations.isEmpty() -> EmptyState("No nearby police stations found.")
+                        else -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            stations.forEach { station -> StationRow(station) }
+                        }
                     }
                 }
             }
@@ -156,31 +185,22 @@ fun LocationScreen(navController: NavController) {
 @Composable
 private fun StationRow(station: NearbyStation) {
     val context = LocalContext.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFF5F5F5))
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(Icons.Filled.LocalPolice, contentDescription = null, tint = Red, modifier = Modifier.size(28.dp))
-        Spacer(Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(station.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-            Text(station.address, fontSize = 12.sp, color = Color.Gray)
-            Text(
-                "%.1f km away".format(station.distanceMeters / 1000.0),
-                fontSize = 12.sp,
-                color = Red
-            )
+    ListRow(
+        icon = Icons.Filled.LocalPolice,
+        title = station.name,
+        subtitle = "${station.address} • %.1f km away".format(station.distanceMeters / 1000.0),
+        trailing = {
+            IconButton(onClick = {
+                val geoUri = "https://maps.google.com/maps?daddr=${station.location.latitude},${station.location.longitude}"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(geoUri))
+                ContextCompat.startActivity(context, intent, null)
+            }) {
+                Icon(
+                    Icons.Filled.Directions,
+                    contentDescription = "Directions to ${station.name}",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
-        IconButton(onClick = {
-            val geoUri = "https://maps.google.com/maps?daddr=${station.location.latitude},${station.location.longitude}"
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(geoUri))
-            ContextCompat.startActivity(context, intent, null)
-        }) {
-            Icon(Icons.Filled.Directions, contentDescription = "Directions to ${station.name}", tint = Red)
-        }
-    }
+    )
 }
