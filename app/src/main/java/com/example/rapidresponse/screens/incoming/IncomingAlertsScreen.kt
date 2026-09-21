@@ -4,24 +4,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import com.example.rapidresponse.model.EmergencyAlert
+import com.example.rapidresponse.ui.components.EmptyState
 import com.example.rapidresponse.ui.components.ScreenHeader
-import com.example.rapidresponse.ui.theme.Red
+import com.example.rapidresponse.ui.components.StatusPill
+import com.example.rapidresponse.ui.theme.Moss
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -51,16 +48,17 @@ fun IncomingAlertsScreen(navController: NavController, viewModel: IncomingAlerts
         ScreenHeader(title = "Incoming Alerts", onBack = { navController.popBackStack() })
         Text(
             "Everything reported campus-wide in the last 24 hours.",
-            fontSize = 13.sp,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         when {
             loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Red)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
             error != null -> Text(error ?: "Something went wrong", color = MaterialTheme.colorScheme.error)
-            alerts.isEmpty() -> Text("No alerts reported in the last 24 hours.")
+            alerts.isEmpty() -> EmptyState("No alerts reported in the last 24 hours.")
             else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(alerts) { alert -> IncomingAlertRow(alert) }
             }
@@ -71,35 +69,41 @@ fun IncomingAlertsScreen(navController: NavController, viewModel: IncomingAlerts
 @Composable
 private fun IncomingAlertRow(alert: EmergencyAlert) {
     val priorityColor = when (alert.priority) {
-        "high" -> Red
-        "medium" -> Color(0xFFF9A825)
-        else -> Color(0xFF2E7D32)
+        "high" -> MaterialTheme.colorScheme.primary
+        "medium" -> MaterialTheme.colorScheme.secondary
+        else -> Moss
     }
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFF5F5F5))
+            .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.medium)
             .padding(14.dp)
     ) {
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            Text(alert.type, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(alert.type, style = MaterialTheme.typography.titleSmall)
+            StatusPill(alert.priority.replaceFirstChar { it.uppercase() }, priorityColor)
+        }
+        Text(alert.description, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
+        if (!alert.building.isNullOrBlank()) {
             Text(
-                (alert.priority).replaceFirstChar { it.uppercase() },
-                color = priorityColor,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
+                "Building: ${alert.building}${alert.floor?.let { " · Floor $it" } ?: ""}",
+                style = MaterialTheme.typography.bodySmall
             )
         }
-        Text(alert.description, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp))
-        if (!alert.building.isNullOrBlank()) {
-            Text("Building: ${alert.building}${alert.floor?.let { " · Floor $it" } ?: ""}", fontSize = 12.sp)
-        }
         alert.reporterName?.let {
-            Text("Reported by $it", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
+            Text(
+                "Reported by $it",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
         alert.createdAt?.let {
-            Text(it, fontSize = 11.sp, color = Color.Gray)
+            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

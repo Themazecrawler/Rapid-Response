@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,16 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rapidresponse.model.AlertStats
 import com.example.rapidresponse.model.CountEntry
+import com.example.rapidresponse.ui.components.EmptyState
 import com.example.rapidresponse.ui.components.ScreenHeader
-import com.example.rapidresponse.ui.theme.Blue
-import com.example.rapidresponse.ui.theme.Red
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
@@ -52,16 +48,17 @@ fun StatisticsScreen(navController: NavController, viewModel: StatisticsViewMode
         ScreenHeader(title = "Alert Statistics", onBack = { navController.popBackStack() })
         Text(
             "A campus-wide picture of reported alerts: what's most common, how urgent, and when.",
-            fontSize = 13.sp,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         when {
             loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Red)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
             error != null -> Text(error ?: "Something went wrong", color = MaterialTheme.colorScheme.error)
-            stats == null || stats!!.totalAlerts == 0 -> Text("No alerts have been reported yet.")
+            stats == null || stats!!.totalAlerts == 0 -> EmptyState("No alerts have been reported yet.")
             else -> StatisticsContent(stats!!)
         }
     }
@@ -69,6 +66,8 @@ fun StatisticsScreen(navController: NavController, viewModel: StatisticsViewMode
 
 @Composable
 private fun StatisticsContent(stats: AlertStats) {
+    val primary = MaterialTheme.colorScheme.primary
+    val secondary = MaterialTheme.colorScheme.secondary
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -78,26 +77,25 @@ private fun StatisticsContent(stats: AlertStats) {
         SummaryRow(stats)
 
         if (stats.byType.isNotEmpty()) {
-            ChartCard(title = "Alerts by Type", accent = Red) {
-                CountBarChart(entries = stats.byType, color = Red)
+            ChartCard(title = "Alerts by Type", accent = primary) {
+                CountBarChart(entries = stats.byType, color = primary)
             }
         }
 
         if (stats.byPriority.isNotEmpty()) {
-            ChartCard(title = "Alerts by Priority", accent = Blue) {
-                CountBarChart(entries = stats.byPriority, color = Blue)
+            ChartCard(title = "Alerts by Priority", accent = secondary) {
+                CountBarChart(entries = stats.byPriority, color = secondary)
             }
         }
 
-        ChartCard(title = "Alerts by Day of Week", accent = Red) {
+        ChartCard(title = "Alerts by Day of Week", accent = primary) {
             Column {
-                CountLineChart(entries = stats.byDayOfWeek, color = Red)
+                CountLineChart(entries = stats.byDayOfWeek, color = primary)
                 stats.busiestDay?.let {
                     Text(
                         "Busiest day: $it",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Red,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = primary,
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
@@ -120,25 +118,25 @@ private fun SummaryRow(stats: AlertStats) {
 private fun StatTile(label: String, value: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFF5F5F5))
+            .clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(vertical = 14.dp, horizontal = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        Text(label, fontSize = 11.sp, color = Color.Gray)
+        Text(value, style = MaterialTheme.typography.headlineSmall)
+        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
 private fun ChartCard(title: String, accent: Color, content: @Composable () -> Unit) {
     Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = Color(0xFFF5F5F5),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = accent)
+            Text(title, style = MaterialTheme.typography.titleSmall, color = accent)
             Spacer(Modifier.height(8.dp))
             content()
         }

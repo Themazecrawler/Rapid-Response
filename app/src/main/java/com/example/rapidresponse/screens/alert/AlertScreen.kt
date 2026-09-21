@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MyLocation
@@ -13,15 +12,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rapidresponse.model.EmergencyAlert
 import com.example.rapidresponse.ui.components.ScreenHeader
-import com.example.rapidresponse.ui.theme.Red
+import com.example.rapidresponse.ui.components.SectionLabel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -97,7 +94,8 @@ fun AlertScreen(navController: NavController, viewModel: AlertViewModel = hiltVi
         Text(
             "Fill in the details below. Your alert is saved instantly and delivered to campus " +
                 "security automatically, even on a weak or dropped connection.",
-            fontSize = 13.sp,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 20.dp)
         )
 
@@ -121,7 +119,7 @@ fun AlertScreen(navController: NavController, viewModel: AlertViewModel = hiltVi
 
         Spacer(Modifier.height(12.dp))
 
-        Text("Priority", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        SectionLabel("Priority")
         Row(modifier = Modifier.padding(vertical = 6.dp)) {
             priorities.forEach { p ->
                 FilterChip(
@@ -212,11 +210,14 @@ fun AlertScreen(navController: NavController, viewModel: AlertViewModel = hiltVi
                 )
             },
             enabled = submitState !is SubmitState.Submitting && description.isNotBlank(),
-            colors = ButtonDefaults.buttonColors(containerColor = Red),
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.fillMaxWidth().height(52.dp).padding(vertical = 8.dp)
         ) {
-            Text(if (submitState is SubmitState.Submitting) "Saving..." else "Send Alert")
+            Text(
+                if (submitState is SubmitState.Submitting) "Saving..." else "Send Alert",
+                style = MaterialTheme.typography.titleSmall
+            )
         }
     }
 }

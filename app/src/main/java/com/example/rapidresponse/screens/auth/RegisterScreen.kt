@@ -2,22 +2,18 @@ package com.example.rapidresponse.screens.auth
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rapidresponse.auth.AuthViewModel
 import com.example.rapidresponse.navigation.Screen
-import com.example.rapidresponse.ui.theme.Red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,8 +35,7 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
     ) {
         Text(
             "Create Account",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.displaySmall,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
@@ -52,7 +47,7 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
             onValueChange = { displayName = it },
             label = { Text("Full name") },
             singleLine = true,
-            shape = RoundedCornerShape(8.dp),
+            shape = MaterialTheme.shapes.small,
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
         )
         OutlinedTextField(
@@ -60,7 +55,7 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
             onValueChange = { campus = it },
             label = { Text("Campus") },
             singleLine = true,
-            shape = RoundedCornerShape(8.dp),
+            shape = MaterialTheme.shapes.small,
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
         )
         OutlinedTextField(
@@ -68,7 +63,7 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
             onValueChange = { email = it },
             label = { Text("Email") },
             singleLine = true,
-            shape = RoundedCornerShape(8.dp),
+            shape = MaterialTheme.shapes.small,
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
         )
         OutlinedTextField(
@@ -77,7 +72,7 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
             label = { Text("Password") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
-            shape = RoundedCornerShape(8.dp),
+            shape = MaterialTheme.shapes.small,
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
         )
         OutlinedTextField(
@@ -86,7 +81,7 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
             label = { Text("Confirm password") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
-            shape = RoundedCornerShape(8.dp),
+            shape = MaterialTheme.shapes.small,
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
         )
 
@@ -124,18 +119,21 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
                 }
             },
             enabled = !loading,
-            colors = ButtonDefaults.buttonColors(containerColor = Red),
-            shape = RoundedCornerShape(8.dp),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+            shape = MaterialTheme.shapes.small,
+            modifier = Modifier.fillMaxWidth().height(52.dp).padding(bottom = 12.dp)
         ) {
-            Text(if (loading) "Creating Account..." else "Sign Up")
+            Text(
+                if (loading) "Creating Account..." else "Sign Up",
+                style = MaterialTheme.typography.titleSmall
+            )
         }
 
         TextButton(
             onClick = { navController.popBackStack() },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text("Already have an account? Sign in", color = Red)
+            Text("Already have an account? Sign in", color = MaterialTheme.colorScheme.primary)
         }
     }
 }
