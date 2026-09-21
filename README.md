@@ -24,4 +24,13 @@ cd backend && npm test
 ./gradlew testDebugUnitTest
 ```
 
+Backend CI also runs `npm run lint`, `npm run typecheck` and `npm run check:env`, which fails when
+a variable read in `src/` is missing from `.env.example`.
+
+## Deployment
+
+The backend ships as the Docker image built from `backend/Dockerfile`, and `docker-compose.yml` is
+for local development. There is no infrastructure-as-code in this repository because the hosting
+target is not fixed.
+
 More detail on design and operations is in [`docs/`](docs). Security reporting is in [`SECURITY.md`](SECURITY.md).
