@@ -1,15 +1,28 @@
 import { NextFunction, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
+import pino, { DestinationStream, Logger } from 'pino';
 
 type LogLevel = 'info' | 'warn' | 'error';
 type LogFields = Record<string, unknown>;
 
+export const createLogger = (level: string, destination?: DestinationStream): Logger =>
+  pino(
+    {
+      level,
+      base: null,
+      messageKey: 'event',
+      timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
+      formatters: { level: (label) => ({ level: label }) },
+    },
+    destination
+  );
+
+const logger = createLogger(
+  process.env.NODE_ENV === 'test' ? 'silent' : (process.env.LOG_LEVEL ?? 'info')
+);
+
 export const log = (level: LogLevel, event: string, fields: LogFields = {}): void => {
-  if (process.env.NODE_ENV === 'test') return;
-  const entry = JSON.stringify({ timestamp: new Date().toISOString(), level, event, ...fields });
-  if (level === 'error') console.error(entry);
-  else if (level === 'warn') console.warn(entry);
-  else console.log(entry);
+  logger[level](fields, event);
 };
 
 interface Metric {
