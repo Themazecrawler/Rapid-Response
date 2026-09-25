@@ -26,8 +26,7 @@ describe('firebase admin config', () => {
     mockGetApps.mockReturnValue([]);
     process.env.FIREBASE_PROJECT_ID = 'project';
     process.env.FIREBASE_CLIENT_EMAIL = 'svc@project.iam.gserviceaccount.com';
-    process.env.FIREBASE_PRIVATE_KEY =
-      '-----BEGIN PRIVATE KEY-----\\nabc\\n-----END PRIVATE KEY-----\\n';
+    process.env.FIREBASE_PRIVATE_KEY = 'first-line\\nsecond-line\\n';
   });
 
   afterEach(() => {
@@ -40,7 +39,7 @@ describe('firebase admin config', () => {
     expect(mockCert).toHaveBeenCalledWith({
       projectId: 'project',
       clientEmail: 'svc@project.iam.gserviceaccount.com',
-      privateKey: '-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----\n',
+      privateKey: 'first-line\nsecond-line\n',
     });
   });
 
